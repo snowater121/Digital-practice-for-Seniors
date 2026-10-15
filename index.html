@@ -1390,6 +1390,50 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 .lbrow .dot{font-size:calc(var(--lu)*13.5)}
 .lbnote{font-size:calc(var(--lu)*13.5)}
 
+
+/* ===== 이름(로그인) — 기록을 이어가기 위한 것뿐 ===== */
+.lbwho{display:flex;align-items:center;gap:calc(var(--lu)*12);width:100%;text-align:left;color:#fff;
+  margin-top:calc(var(--lu)*10);background:rgba(255,255,255,.13);border:1.5px solid rgba(255,255,255,.42);
+  border-radius:calc(var(--lu)*12);padding:calc(var(--lu)*12) calc(var(--lu)*14);min-height:calc(var(--lu)*64)}
+.lbwho .ic{flex:none;width:calc(var(--lu)*38);height:calc(var(--lu)*38);border-radius:50%;
+  background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center}
+.lbwho .ic svg{width:calc(var(--lu)*21);height:calc(var(--lu)*21)}
+.lbwho .tx{flex:1;min-width:0}
+.lbwho .tx b{display:block;font-size:calc(var(--lu)*16);font-weight:800;letter-spacing:-.02em}
+.lbwho .tx small{display:block;font-size:calc(var(--lu)*13.5);font-weight:600;line-height:1.45;
+  margin-top:calc(var(--lu)*3);color:rgba(255,255,255,.93)}
+.lbwho .ch{flex:none;display:flex;align-items:center;background:#fff;color:var(--brand);border-radius:999px;
+  padding:calc(var(--lu)*10) calc(var(--lu)*14);font-size:calc(var(--lu)*14);font-weight:800;
+  white-space:nowrap;min-height:calc(var(--lu)*44)}
+
+.urow .uav{flex:none;width:calc(var(--lu)*44);height:calc(var(--lu)*44);border-radius:50%;
+  background:#E8EEF9;color:var(--brand);display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-disp);font-size:calc(var(--lu)*19);font-weight:400}
+.urow .uav.on{background:var(--brand);color:#fff}
+.urow .tx b{font-size:calc(var(--lu)*17)}
+
+.ufield{display:flex;flex-direction:column;gap:calc(var(--lu)*7);padding:calc(var(--lu)*14) 0 0}
+.ufield label{font-size:calc(var(--lu)*15);font-weight:800;color:#3E4652}
+.ufield label em{font-style:normal;font-size:calc(var(--lu)*13.5);font-weight:700;color:#5E6672;margin-left:5px}
+.ufield input{border:2px solid var(--k-line2);border-radius:calc(var(--lu)*10);background:#fff;
+  padding:calc(var(--lu)*13) calc(var(--lu)*14);min-height:calc(var(--lu)*56);
+  font:inherit;font-size:calc(var(--lu)*19);font-weight:700;color:var(--k-fg);outline:none}
+.ufield input:focus{border-color:var(--brand)}
+.ufield input#uPin,.ufield input#uQ{letter-spacing:.3em;font-size:calc(var(--lu)*22)}
+.unote{margin:calc(var(--lu)*12) 0 0;font-size:calc(var(--lu)*14);line-height:1.65;color:#5E6672;font-weight:600}
+.uerr{margin:calc(var(--lu)*12) 0 0;background:#FBECEC;color:#A3140A;border-radius:calc(var(--lu)*9);
+  padding:calc(var(--lu)*12) calc(var(--lu)*13);font-size:calc(var(--lu)*15);font-weight:700;line-height:1.55}
+.uask{margin:calc(var(--lu)*14) 0 0;font-size:calc(var(--lu)*15.5);line-height:1.7;color:#3E4652;font-weight:600}
+.uplain{display:block;width:100%;margin-top:calc(var(--lu)*10);background:#fff;border:2px solid var(--k-line2);
+  border-radius:calc(var(--lu)*12);color:#3E4652;min-height:calc(var(--lu)*54);
+  font-size:calc(var(--lu)*16);font-weight:800}
+
+.recwho{display:flex;align-items:center;gap:calc(var(--lu)*10);flex-wrap:wrap;background:#EEF6F1;
+  border-radius:calc(var(--lu)*10);padding:calc(var(--lu)*14);margin-top:calc(var(--lu)*14);
+  min-height:calc(var(--lu)*58)}
+.recwho .lb{font-size:calc(var(--lu)*14);font-weight:800;color:#3E4652}
+.recwho b{font-size:calc(var(--lu)*19);font-weight:800}
+.recwho .ok{margin-left:auto;font-size:calc(var(--lu)*13.5);font-weight:700;color:var(--ok2)}
 </style>
 
 <div class="app">
@@ -1837,19 +1881,71 @@ var S = {
   modal:null, pending:null, hints:false, timerOn:true, left:60,
   mission:0, orderNo:null, inserting:false, timedout:false, optErr:"", sub:"단품",
   bk:freshBank(), tr:null, tb:null, big:false, picker:false,
-  cls:null, lv:"home", name:"", recRange:"day", helpTab:null
+  cls:null, lv:"home", name:"", recRange:"day", helpTab:null,
+  ufnm:"", ufpin:"", uq:null, uqpin:"", uerr:"", umove:null
 };
 var HINT=null, tick=null, justCleared=false;
 
 /* ========== 매일 연습 기록 ========== */
-var DKEY="kiosk-daily-v1";
+var DKEY="kiosk-daily-v1", PKEY="kiosk-pref-v1";
 var DAILY={date:"",plan:[],cleared:[],dayDone:false,streak:0,best:0,total:0,lastDone:"",hist:[],allClear:[],attended:false,pcls:""};
+function resetDaily(){
+  DAILY.date=""; DAILY.plan=[]; DAILY.cleared=[]; DAILY.dayDone=false; DAILY.streak=0; DAILY.best=0;
+  DAILY.total=0; DAILY.lastDone=""; DAILY.hist=[]; DAILY.allClear=[]; DAILY.attended=false; DAILY.pcls="";
+}
+
+/* ========== 사람 구분 ==========
+   로그인은 기록을 이어가기 위한 것뿐입니다. 이름을 고르지 않아도 연습·출석·오늘의 세 가지는 모두 됩니다.
+   손님은 본래 열쇠를 그대로 쓰고, 이름을 고르면 열쇠 뒤에 그 사람 번호가 붙습니다. */
+var UKEY="kiosk-users-v1";
+var USERS={list:[],cur:""};
+function loadUsers(){
+  try{ var p=JSON.parse(localStorage.getItem(UKEY)||"null");
+       if(p && p.list instanceof Array){ USERS.list=p.list; USERS.cur=p.cur||""; } }catch(e){}
+  if(USERS.cur && !findUser(USERS.cur)) USERS.cur="";
+}
+function saveUsers(){ try{ localStorage.setItem(UKEY,JSON.stringify(USERS)); }catch(e){} }
+function findUser(id){ var i; for(i=0;i<USERS.list.length;i++){ if(USERS.list[i].id===id) return USERS.list[i]; } return null; }
+function curUser(){ return findUser(USERS.cur); }
+function userName(){ var u=curUser(); return u?u.nm:""; }
+function pkey(b){ return USERS.cur ? b+":"+USERS.cur : b; }
+/* 그 사람 몫에 쌓인 기록이 있는지 (id가 빈 값이면 손님 몫) */
+function slotHas(id){
+  function g(b){ try{ return localStorage.getItem(id? b+":"+id : b); }catch(e){ return null; } }
+  try{ var p=JSON.parse(g(DKEY)||"null");
+       if(p && ((p.hist&&p.hist.length) || (p.allClear&&p.allClear.length))) return true; }catch(e){}
+  try{ var q=JSON.parse(g(LKEY)||"null");
+       if(q && q.days && Object.keys(q.days).length) return true; }catch(e){}
+  return false;
+}
+/* 손님으로 쌓은 것을 그 이름 몫으로 옮겨 담기 */
+function moveGuestTo(id){
+  [DKEY,LKEY,PKEY].forEach(function(b){
+    try{ var v=localStorage.getItem(b);
+         if(v!=null) localStorage.setItem(b+":"+id,v);
+         localStorage.removeItem(b); }catch(e){}
+  });
+}
+function useUser(id){
+  USERS.cur=id||""; saveUsers();
+  LOG={days:{}}; resetDaily();
+  S.big=false; S.cls=null; S.name=""; S.timerOn=true;
+  loadLog(); loadPref(); loadDaily();
+  if(userName()) S.name=userName();
+  if(el.timer) el.timer.setAttribute("aria-pressed",String(S.timerOn));
+  S.lv = S.cls ? "home" : "class";
+}
+function newUser(nm,pin){
+  var id="u"+Date.now().toString(36)+Math.floor(Math.random()*1296).toString(36);
+  USERS.list.push({id:id,nm:nm,pin:pin||""}); saveUsers();
+  return id;
+}
 function todayStr(){var d=new Date();return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
 function yesterdayStr(){var d=new Date();d.setDate(d.getDate()-1);return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
 function h32(s){var h=0;for(var i=0;i<s.length;i++){h=(h*31+s.charCodeAt(i))|0;}return Math.abs(h)||7;}
 function loadDaily(){
   try{
-    var raw=localStorage.getItem(DKEY);
+    var raw=localStorage.getItem(pkey(DKEY));
     if(raw){ var p=JSON.parse(raw); if(p&&typeof p==="object"){ for(var k in DAILY){ if(k in p) DAILY[k]=p[k]; } } }
   }catch(e){}
   if(DAILY.date!==todayStr()){
@@ -1858,9 +1954,9 @@ function loadDaily(){
   if(!DAILY.plan || DAILY.plan.length!==3 || DAILY.pcls!==(S.cls||"기초반")){ DAILY.plan=makePlan(DAILY.date); DAILY.pcls=S.cls||"기초반"; }
   saveDaily();
 }
-function saveDaily(){ try{ localStorage.setItem(DKEY,JSON.stringify(DAILY)); }catch(e){} }
-function save(){ try{ localStorage.setItem("kiosk-pref-v1",JSON.stringify({big:S.big,cls:S.cls,name:S.name,tm:S.timerOn})); }catch(e){} }
-function loadPref(){ try{ var p=JSON.parse(localStorage.getItem("kiosk-pref-v1")||"{}"); S.big=!!p.big;
+function saveDaily(){ try{ localStorage.setItem(pkey(DKEY),JSON.stringify(DAILY)); }catch(e){} }
+function save(){ try{ localStorage.setItem(pkey(PKEY),JSON.stringify({big:S.big,cls:S.cls,name:S.name,tm:S.timerOn})); }catch(e){} }
+function loadPref(){ try{ var p=JSON.parse(localStorage.getItem(pkey(PKEY))||"{}"); S.big=!!p.big;
   if(p.cls==="기초반"||p.cls==="심화반") S.cls=p.cls; S.name=p.name||"";
   S.timerOn = (typeof p.tm==="boolean") ? p.tm : (S.cls==="심화반"); }catch(e){} }
 function mkey(mode,mi){ return mode+":"+mi; }
@@ -1969,11 +2065,13 @@ function render(){
   if(S.mode==="lobby"){
     document.documentElement.setAttribute("data-big",S.big?"1":"0");
     if(!S.cls && S.lv!=="class") S.lv="class";
-    el.screen.innerHTML = S.lv==="class"?vClass() : S.lv==="record"?vRecord() : S.lv==="help"?vHelp() : vLobby();
+    el.screen.innerHTML = S.lv==="class"?vClass() : S.lv==="record"?vRecord() : S.lv==="help"?vHelp()
+      : S.lv==="user"?vUser() : vLobby();
     el.tbar.hidden=true;
     el.mission.innerHTML = S.lv==="class"?"반을 고르면 그 반에 맞는 연습을 매일 세 가지씩 골라 드립니다."
       : S.lv==="record"?"오늘 한 연습을 노션에 올릴 글로 만들어 드립니다."
       : S.lv==="help"?"막혔을 때 할 일과 낯선 말 풀이입니다."
+      : S.lv==="user"?"이름을 고르지 않아도 연습과 출석은 모두 됩니다. 이름은 기록을 이어가기 위한 것입니다."
       : "로비에서 오늘 할 연습을 고르세요. 아래 ‘가게 고르기’로 바로 열 수도 있습니다.";
     var tg0=document.querySelector(".mission .tag"); tg0.textContent="안내"; tg0.className="tag";
     el.swap.hidden=true; paintDaily(); if(S.lv==="home") lobbyScrollHint(); else el.screen.onscroll=null;
@@ -2944,8 +3042,9 @@ function vLobby(){
         +'<button class="lbbigbtn" data-l="big" aria-pressed="'+(S.big?"true":"false")+'">글씨 크게</button></div>'
       +'<div class="dtrow"><div class="dt">'+(now.getMonth()+1)+'월 '+now.getDate()+'일 '+W[now.getDay()]+'요일</div>'
         +'<button class="lbcls" data-l="lv" data-v="class">'+(S.cls||"기초반")+' <small>바꾸기</small></button></div>'
-      +'<h1>오늘도 한 가지씩</h1>'
+      +'<h1>'+(userName()? esc(userName())+'님,<br>오늘도 한 가지씩' : '오늘도 한 가지씩')+'</h1>'
       +cta
+      +whoRow()
     +'</div>'
 
     +'<div class="lbsection">'
@@ -4280,11 +4379,11 @@ var CLASSINFO={
 var LKEY="kiosk-log-v1", LOG={days:{}};
 function dnum(ds){ var p=String(ds).split("-"); return new Date(+p[0],(+p[1])-1,+p[2]).getTime(); }
 function loadLog(){
-  try{ var p=JSON.parse(localStorage.getItem(LKEY)||"null"); if(p&&p.days) LOG=p; }catch(e){}
+  try{ var p=JSON.parse(localStorage.getItem(pkey(LKEY))||"null"); if(p&&p.days) LOG=p; }catch(e){}
   var lim=Date.now()-60*86400000;
   Object.keys(LOG.days).forEach(function(ds){ if(dnum(ds)<lim) delete LOG.days[ds]; });
 }
-function saveLog(){ try{ localStorage.setItem(LKEY,JSON.stringify(LOG)); }catch(e){} }
+function saveLog(){ try{ localStorage.setItem(pkey(LKEY),JSON.stringify(LOG)); }catch(e){} }
 function dayLog(ds){ ds=ds||todayStr(); return LOG.days[ds]||(LOG.days[ds]={}); }
 function logEntry(key){ var d=dayLog(); return d[key]||(d[key]={n:0,w:0,h:0,b:0,f:0,ok:0,s:0}); }
 function logBump(key,f,n){ if(!key) return; var e=logEntry(key); e[f]=(e[f]||0)+n; saveLog(); }
@@ -4447,7 +4546,8 @@ var CICO={
   note:'<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="M9 12h7M9 16h7"/>',
   help:'<circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.2-2.4 3.8"/><path d="M12 17.2v.1"/>',
   copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>',
-  left:'<path d="M15 6l-6 6 6 6"/>'
+  left:'<path d="M15 6l-6 6 6 6"/>',
+  user:'<circle cx="12" cy="8" r="3.6"/><path d="M5 20c0-3.1 3.1-5.2 7-5.2s7 2.1 7 5.2"/>'
 };
 function CI(n){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(CICO[n]||'')+'</svg>'; }
 function paintControls(){
@@ -4501,6 +4601,100 @@ function vClass(){
     +'</div>'
     +'<div style="padding:0 calc(var(--lu)*16) calc(var(--lu)*24)">'+cards+'</div>'
   +'</div>';
+}
+
+/* ===== 이름(로그인) — 기록을 이어가기 위한 것뿐. 안 골라도 연습·출석은 모두 됩니다 ===== */
+function whoRow(){
+  var nm=userName();
+  return '<button class="lbwho" data-l="lv" data-v="user">'
+    +'<span class="ic">'+CI("user")+'</span>'
+    +'<span class="tx"><b>'+(nm? esc(nm)+'님으로 기록 중' : '손님으로 연습 중')+'</b>'
+      +'<small>'+(nm? '다음에 오셔도 이 이름으로 이어집니다' : '연습과 출석은 그대로 됩니다 · 이름을 고르면 기록이 이어집니다')+'</small></span>'
+    +'<span class="ch">'+(nm?'바꾸기':'이름 고르기')+'</span></button>';
+}
+function vUser(){
+  var nm=userName(), i;
+
+  /* 손님으로 해 둔 것을 옮겨 담을지 묻기 */
+  if(S.umove){
+    var mu=findUser(S.umove);
+    return '<div class="lobby">'+lbTop("지금까지 한 연습")
+      +'<div class="lbintro"><h2>해 두신 연습이<br>있습니다</h2>'
+        +'<p>손님으로 연습한 기록이 이 기기에 남아 있습니다. 이것을 <b>'+esc(mu?mu.nm:"")+'님</b>의 기록으로 옮겨 담을까요?</p></div>'
+      +'<div class="lbsection">'
+        +'<button class="bigact" data-l="umove" data-v="yes">옮겨 담기</button>'
+        +'<button class="uplain" data-l="umove" data-v="no">옮기지 않고 새로 시작하기</button>'
+        +'<p class="unote">옮겨 담으면 출석 도장과 연속 날짜까지 그대로 따라갑니다.</p>'
+      +'</div></div>';
+  }
+
+  /* 숫자 4자리를 적어 둔 사람 */
+  if(S.uq){
+    var qu=findUser(S.uq);
+    return '<div class="lobby">'+lbTop("숫자 누르기")
+      +'<div class="lbintro"><h2>'+esc(qu?qu.nm:"")+'님,<br>숫자 네 자리를 눌러 주세요</h2>'
+        +'<p>처음에 적어 두신 숫자입니다. 잊으셨으면 그만두고 새 이름으로 시작하셔도 됩니다.</p></div>'
+      +'<div class="lbsection">'
+        +'<div class="ufield"><label for="uQ">숫자 네 자리</label>'
+          +'<input id="uQ" type="tel" inputmode="numeric" maxlength="4" value="'+esc(S.uqpin||"")+'"></div>'
+        +(S.uerr?'<p class="uerr">'+esc(S.uerr)+'</p>':'')
+        +'<button class="bigact" data-l="uok">들어가기</button>'
+        +'<button class="uplain" data-l="lv" data-v="user">그만두기</button>'
+      +'</div></div>';
+  }
+
+  var h='<div class="lobby">'+lbTop(nm?"이름 바꾸기":"이름 고르기")
+    +'<div class="lbintro"><h2>'+(nm?'누구로 기록할까요?':'이름을 고르면<br>기록이 이어집니다')+'</h2>'
+      +'<p>이름을 고르지 않아도 <b>연습과 출석은 모두 됩니다.</b> 여러 사람이 함께 쓰는 기기에서는 이름을 골라야 내 기록만 모입니다.</p></div>';
+
+  h+='<div class="lbsection"><div class="lbsec"><h2>이름</h2><span>'+USERS.list.length+'명</span></div>';
+  if(!USERS.list.length) h+='<p class="lbempty">아직 적어 둔 이름이 없습니다. 아래에서 새로 적어 주세요.</p>';
+  for(i=0;i<USERS.list.length;i++){
+    var u=USERS.list[i], on=u.id===USERS.cur;
+    h+='<button class="lbrow urow" data-l="user" data-v="'+u.id+'">'
+      +'<span class="uav'+(on?" on":"")+'">'+esc(u.nm.slice(0,1))+'</span>'
+      +'<span class="tx"><b>'+esc(u.nm)+'</b><small>'+(u.pin?'숫자 네 자리를 누르고 들어갑니다':'바로 들어갑니다')+'</small></span>'
+      +'<span class="act">'+(on?'지금 이 이름':'이 이름으로')+'</span></button>';
+  }
+  h+='</div>';
+
+  h+='<div class="lbsection">'
+    +'<div class="lbsec"><h2>이름 새로 적기</h2><span>처음 오셨으면 여기</span></div>'
+    +'<div class="ufield"><label for="uNm">이름</label>'
+      +'<input id="uNm" placeholder="예: 김영자" value="'+esc(S.ufnm||"").replace(/"/g,"&quot;")+'" autocomplete="off"></div>'
+    +'<div class="ufield"><label for="uPin">숫자 네 자리 <em>안 적어도 됩니다</em></label>'
+      +'<input id="uPin" type="tel" inputmode="numeric" maxlength="4" placeholder="예: 0315" value="'+esc(S.ufpin||"")+'"></div>'
+    +'<p class="unote">여러 사람이 함께 쓰는 기기라면 숫자를 적어 두세요. 혼자 쓰는 휴대폰이면 비워 두시면 됩니다.</p>'
+    +(S.uerr?'<p class="uerr">'+esc(S.uerr)+'</p>':'')
+    +'<button class="bigact" data-l="unew">이 이름으로 시작하기</button>'
+  +'</div>';
+
+  if(USERS.cur){
+    h+='<div class="lbsection">'
+      +'<div class="lbsec"><h2>이름 없이 쓰기</h2><span>손님</span></div>'
+      +'<p class="unote">손님으로 바꿔도 '+esc(nm)+'님의 기록은 지워지지 않습니다. 다시 이름을 고르면 그대로 이어집니다.</p>'
+      +'<button class="uplain" data-l="guest">손님으로 쓰기</button>'
+    +'</div>';
+  }
+  h+='<p class="lbnote">이름과 기록은 이 기기 안에만 저장됩니다. 어디로도 보내지 않습니다.</p>';
+  return h+'</div>';
+}
+function pickUser(id){
+  var u=findUser(id); if(!u) return;
+  if(id===USERS.cur){ S.lv="home"; render(); el.screen.scrollTop=0; return; }
+  if(u.pin){ S.uq=id; S.uqpin=""; S.uerr=""; render(); el.screen.scrollTop=0; return; }
+  enterUser(id);
+}
+function enterUser(id){
+  if(!USERS.cur && slotHas("") && !slotHas(id)){ S.umove=id; S.uerr=""; render(); el.screen.scrollTop=0; return; }
+  finishUser(id);
+}
+function finishUser(id){
+  var u=findUser(id), nm=u?u.nm:"";
+  useUser(id);
+  S.uq=null; S.umove=null; S.uerr=""; S.uqpin="";
+  paintDaily(); render(); el.screen.scrollTop=0;
+  toast(nm+"님으로 기록합니다. 다음에 오셔도 이어집니다.",true);
 }
 
 function storeName(m){ return (DATA[m]&&DATA[m].store)||m; }
@@ -4573,11 +4767,18 @@ function vRecord(){
         +'<div><span class="lb">연속 출석</span><b>'+(DAILY.streak||0)+'<small>일</small></b></div></div>'
       +(rows||'<p class="lbempty" style="padding-bottom:calc(var(--lu)*14)">아직 연습한 것이 없습니다. 하나만 해도 기록이 생깁니다.</p>')
     +'</div>'
+    +(userName()?'':'<div class="lbsection">'
+      +'<div class="lbsec"><h2>기록 이어가기</h2><span>지금은 손님</span></div>'
+      +'<p class="uask">지금 기록은 <b>손님 몫</b>으로 쌓입니다. 여러 사람이 함께 쓰는 기기라면 이름을 골라야 내 기록만 모입니다.</p>'
+      +'<button class="bigact" data-l="lv" data-v="user">이름 고르고 이어가기</button>'
+    +'</div>')
     +'<div class="lbsection" style="padding-bottom:calc(var(--lu)*18)">'
       +'<div class="lbsec"><h2>노션에 올릴 글</h2><span>멘토가 함께 봅니다</span></div>'
       +'<div class="lbseg"><button data-l="range" data-v="day" aria-pressed="'+(!wk)+'">오늘</button>'
         +'<button data-l="range" data-v="week" aria-pressed="'+wk+'">최근 7일</button></div>'
-      +'<div class="recname"><label for="recName">이름</label><input id="recName" placeholder="적지 않아도 됩니다" value="'+esc(S.name||"").replace(/"/g,"&quot;")+'" autocomplete="off"></div>'
+      +(userName()
+        ? '<div class="recwho"><span class="lb">이름</span><b>'+esc(userName())+'</b><span class="ok">이어서 기록됩니다</span></div>'
+        : '<div class="recname"><label for="recName">이름</label><input id="recName" placeholder="적지 않아도 됩니다" value="'+esc(S.name||"").replace(/"/g,"&quot;")+'" autocomplete="off"></div>')
       +'<div class="recprev" id="recPrev" aria-label="노션에 올라갈 기록 미리보기">'+recordHTML(recordText())+'</div>'
       +'<textarea class="rectx" id="recText" readonly tabindex="-1" aria-hidden="true">'+esc(recordText())+'</textarea>'
       +'<button class="bigact" data-l="copy">'+CI("copy")+'기록 복사하기</button>'
@@ -4649,7 +4850,33 @@ function copyRecord(btn){
 function lobbyAct(lb){
   var a=lb.getAttribute("data-l"), v=lb.getAttribute("data-v");
   if(a==="big"){ S.big=!S.big; if(S.bk)S.bk.big=S.big; if(S.tr)S.tr.big=S.big; save(); render(); return; }
-  if(a==="lv"){ S.lv=v; render(); el.screen.scrollTop=0; return; }
+  if(a==="lv"){ S.lv=v; S.uq=null; S.umove=null; S.uerr=""; render(); el.screen.scrollTop=0; return; }
+  if(a==="user"){ pickUser(v); return; }
+  if(a==="unew"){
+    var unm=(S.ufnm||"").trim(), upn=(S.ufpin||"").replace(/[^0-9]/g,"");
+    if(!unm){ S.uerr="이름을 적어 주세요."; render(); return; }
+    if(upn && upn.length!==4){ S.uerr="숫자는 네 자리로 적어 주세요. 안 적어도 됩니다."; render(); return; }
+    var uid=newUser(unm.slice(0,12),upn);
+    S.ufnm=""; S.ufpin=""; S.uerr="";
+    enterUser(uid); return;
+  }
+  if(a==="uok"){
+    var qu=findUser(S.uq);
+    if(!qu){ S.uq=null; render(); return; }
+    if((S.uqpin||"")!==qu.pin){ S.uerr="숫자가 다릅니다. 다시 눌러 주세요."; S.uqpin=""; render(); return; }
+    var qid=S.uq; S.uq=null; S.uqpin=""; S.uerr=""; enterUser(qid); return;
+  }
+  if(a==="umove"){
+    var mid=S.umove; S.umove=null;
+    if(!mid){ render(); return; }
+    if(v==="yes") moveGuestTo(mid);
+    finishUser(mid); return;
+  }
+  if(a==="guest"){
+    useUser(""); S.uq=null; S.umove=null; S.uerr="";
+    paintDaily(); render(); el.screen.scrollTop=0;
+    toast("손님으로 바꿨습니다. 연습과 출석은 그대로 됩니다."); return;
+  }
   if(a==="cls"){
     var first=!S.cls, changed=S.cls!==v;
     S.cls=v; S.timerOn=(v==="심화반");
@@ -4668,7 +4895,11 @@ function lobbyAct(lb){
   render();
 }
 el.screen.addEventListener("input",function(e){
-  if(e.target.id!=="recName") return;
+  var id=e.target.id;
+  if(id==="uNm"){ S.ufnm=e.target.value.slice(0,12); return; }
+  if(id==="uPin"){ e.target.value=e.target.value.replace(/[^0-9]/g,"").slice(0,4); S.ufpin=e.target.value; return; }
+  if(id==="uQ"){ e.target.value=e.target.value.replace(/[^0-9]/g,"").slice(0,4); S.uqpin=e.target.value; return; }
+  if(id!=="recName") return;
   S.name=e.target.value.slice(0,20); save();
   var ta=document.getElementById("recText"); if(ta) ta.value=recordText();
   var pv=document.getElementById("recPrev"); if(pv) pv.innerHTML=recordHTML(recordText());
@@ -4676,7 +4907,8 @@ el.screen.addEventListener("input",function(e){
 
 /* 상태 보존 */
 function boot(saved){
-  loadLog(); loadPref(); loadDaily();
+  loadUsers(); loadLog(); loadPref(); loadDaily();
+  if(userName()) S.name=userName();
   if(!S.cls) S.lv="class";
   el.timer.setAttribute("aria-pressed",String(S.timerOn));
   if(saved&&saved.mode&&(saved.mode==="lobby"||MISSIONS[saved.mode])){ S.mode=saved.mode; S.mission=saved.mission||0; }
