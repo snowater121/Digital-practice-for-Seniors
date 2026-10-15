@@ -1251,12 +1251,16 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 
 
 /* ===== 하단 단추 — 앱 탭바처럼 그림 + 글씨 ===== */
-.controls{padding:7px 8px calc(7px + env(safe-area-inset-bottom,0px))}
-.ctlrow{display:flex;gap:6px;flex:1;min-width:0}
-.ctl{flex:1;min-width:0;flex-direction:column;gap:4px;min-height:60px;padding:7px 2px;
-  font-size:13px;font-weight:700;line-height:1.15;white-space:nowrap;transition:transform .08s,background .12s}
+.controls{padding:7px 8px calc(7px + env(safe-area-inset-bottom,0px));gap:6px;align-items:stretch}
+/* 시간제한 단추도 paintControls에서 이 줄 안으로 옮겨 붙입니다 — 모든 칸이 같은 넓이 */
+.ctlrow{display:flex;gap:6px;flex:1 1 0;min-width:0}
+.ctl{flex:1 1 0;min-width:0;flex-direction:column;gap:4px;min-height:60px;padding:7px 3px;
+  font-size:13px;font-weight:700;line-height:1.2;text-align:center;
+  white-space:normal;word-break:keep-all;overflow:hidden;
+  transition:transform .08s,background .12s}
+.ctl[hidden]{display:none}
 .ctl svg{width:22px;height:22px;flex:none}
-.ctl.wide{flex:1.35}
+.ctl.wide{flex:1 1 0}
 .ctl.on{background:#1B2638;border-color:#4F7CC4;color:#fff}
 .ctl[aria-disabled="true"]{color:#8C96A3}
 .ctl[aria-pressed="true"]{background:#39609F;border-color:#39609F;color:#fff}
@@ -1468,7 +1472,7 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 
   <div class="controls">
     <div class="ctlrow" id="ctlrow"></div>
-    <button class="ctl" id="btnTimer" aria-pressed="true" hidden>시간제한 <small>켜짐</small></button>
+    <button class="ctl" id="btnTimer" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>시간<wbr>제한 <small>켜짐</small></button>
   </div>
 </div>
 </div>
@@ -4558,6 +4562,7 @@ function paintControls(){
       +'<button class="ctl'+(S.lv==="record"?" on":"")+'" data-c="record">'+CI("note")+'오늘 기록</button>'
       +'<button class="ctl wide" data-c="picker">'+CI("store")+'가게 고르기</button>'
       +'<button class="ctl'+(S.lv==="help"?" on":"")+'" data-c="help">'+CI("help")+'막힐 때</button>';
+    if(el.timer) row.appendChild(el.timer);
     return;
   }
   row.innerHTML=
@@ -4565,7 +4570,8 @@ function paintControls(){
     +'<button class="ctl" data-c="back" aria-disabled="'+(UNDO.length?"false":"true")+'">'+CI("back")+'뒤로</button>'
     +'<button class="ctl wide" data-c="picker">'+CI("store")+'가게 바꾸기</button>'
     +'<button class="ctl" data-c="hint" aria-pressed="'+(S.hints?"true":"false")+'">'+CI("bulb")+(S.hints?'힌트 켬':'힌트 끔')+'</button>'
-    +'<button class="ctl" data-c="reset">'+CI("redo")+'처음부터</button>';
+    +'<button class="ctl" data-c="reset">'+CI("redo")+'처음<wbr>부터</button>';
+  if(el.timer) row.appendChild(el.timer);
 }
 document.getElementById("ctlrow").addEventListener("click",function(e){
   var b=e.target.closest("[data-c]"); if(!b) return;
