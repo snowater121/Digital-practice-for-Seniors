@@ -3343,11 +3343,12 @@ function mapListHTML(){
   if(m.status==="loading") return h+'<p class="map-note">가게와 은행을 찾고 있습니다.</p>';
   if(m.status==="error") return h+'<p class="map-note">검색 결과를 가져오지 못했습니다. 다시 시도해 주세요.</p>';
   if(!selected.length) return h+'<p class="map-note">근처에 등록된 '+label+' 정보를 찾지 못했습니다.</p>';
+  h+='<p class="map-note">장소를 누르면 네이버 지도에서 이름을 검색합니다. 검색 결과가 다를 수 있으니 위치를 확인해 주세요.</p>';
   selected.forEach(function(x){
-    var link='https://www.openstreetmap.org/'+x.type+'/'+x.id;
+    var link='https://map.naver.com/p/search/'+encodeURIComponent(x.name);
     h+='<a class="map-row '+x.category+'" href="'+link+'" target="_blank" rel="noopener noreferrer">'
       +'<span class="map-kind">'+(x.category==="bank"?"은행":"식당")+'</span>'+esc(x.name)
-      +'<small>OpenStreetMap에서 장소 정보 보기 · 실습 참여 여부 미확인</small></a>';
+      +'<small>네이버 지도에서 검색 · 실습 참여 여부 미확인</small></a>';
   });
   return h;
 }
