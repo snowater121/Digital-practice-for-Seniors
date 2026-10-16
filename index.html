@@ -1525,6 +1525,17 @@ html:not([data-mode="lobby"]) .device{border-width:3px;border-radius:0;box-shado
 .map-intro p{margin:0 0 16px}
 .map-frame{width:100%;height:340px;border:1px solid #CBD2DA;border-radius:10px;background:#EDEFF2;z-index:0}
 .map-frame .leaflet-control-attribution{font-size:11px}
+.map-categories{display:flex;gap:8px;margin:14px 0 12px}
+.map-categories button{flex:1;min-width:0;min-height:52px;padding:8px 4px;border:2px solid #B5C3D5;border-radius:10px;background:#fff;color:#1A3D7C;font:inherit;font-size:17px;font-weight:800}
+.map-categories button[aria-pressed="true"]{border-color:#1A3D7C;background:#1A3D7C;color:#fff}
+.map-categories small{font-size:14px}
+.map-pin{display:flex;align-items:center;justify-content:center;width:36px;height:36px;box-sizing:border-box;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 7px #0005;color:#fff;font-size:17px;font-weight:900}
+.map-pin.restaurant{background:#A94C00}
+.map-pin.bank{background:#164F9A}
+.map-list .map-row{border-left:5px solid #A94C00;padding-left:12px}
+.map-row.bank{border-left-color:#164F9A}
+.map-kind{display:inline-block;margin-right:8px;font-size:14px;color:#82400D}
+.map-row.bank .map-kind{color:#164F9A}
 .map-list{padding:0 16px 24px}
 .map-list h3{font-size:19px;margin:16px 0 8px}
 .map-row{display:block;padding:14px 0;border-top:1px solid #D4D9E0;color:#1A3D7C;
@@ -2003,7 +2014,7 @@ var S = {
   bk:freshBank(), tr:null, tb:null, big:false, picker:false,
   cls:null, lv:"home", name:"", recRange:"day", helpTab:null,
   ufnm:"", ufpin:"", uorg:"", uq:null, uqpin:"", uerr:"", umove:null,
-  missionOpen:false, map:{status:"idle",items:[],lat:null,lon:null,error:""}
+  missionOpen:false, map:{status:"idle",items:[],lat:null,lon:null,error:"",category:"all"}
 };
 var HINT=null, tick=null, justCleared=false, installPrompt=null;
 window.addEventListener("beforeinstallprompt",function(e){
@@ -3134,9 +3145,39 @@ function clearMap(){
   if(!mapInstance) return;
   if(mapInstance.kind==="naver"){
     if(mapInstance.marker) mapInstance.marker.setMap(null);
+    (mapInstance.places||[]).forEach(function(marker){marker.setMap(null);});
     mapInstance.map.destroy();
   }else mapInstance.map.remove();
   mapInstance=null;
+}
+function visibleMapItems(){
+  return S.map.items.filter(function(x){return S.map.category==="all" || x.category===S.map.category;});
+}
+function syncMapMarkers(){
+  if(!mapInstance) return;
+  var holder=mapInstance;
+  (holder.places||[]).forEach(function(marker){
+    if(holder.kind==="naver") marker.setMap(null);
+    else holder.map.removeLayer(marker);
+  });
+  holder.places=[];
+  visibleMapItems().forEach(function(x){
+    if(x.lat==null || x.lon==null) return;
+    var marker;
+    if(holder.kind==="naver"){
+      marker=new naver.maps.Marker({
+        position:new naver.maps.LatLng(x.lat,x.lon),map:holder.map,
+        title:(x.category==="bank"?"은행 · ":"식당 · ")+x.name,
+        icon:{content:'<span class="map-pin '+x.category+'">'+(x.category==="bank"?"은":"식")+'</span>',
+          size:new naver.maps.Size(36,36),anchor:new naver.maps.Point(18,18)}
+      });
+    }else{
+      marker=L.circleMarker([x.lat,x.lon],{radius:9,color:x.category==="bank"?'#164F9A':'#A94C00',
+        weight:3,fillOpacity:.85}).addTo(holder.map);
+      marker.bindPopup(esc(x.name));
+    }
+    holder.places.push(marker);
+  });
 }
 function loadNaverMap(){
   if(naverMapFailed) return Promise.reject(new Error("naver map unavailable"));
@@ -3179,7 +3220,8 @@ function mountFallbackMap(node){
   }).addTo(map);
   if(located) L.circleMarker([m.lat,m.lon],{radius:10,color:'#124B9B',weight:3,fillColor:'#fff',fillOpacity:1})
     .addTo(map).bindPopup('내 위치');
-  mapInstance={kind:"leaflet",map:map};
+  mapInstance={kind:"leaflet",map:map,places:[]};
+  syncMapMarkers();
 }
 function mountMap(){
   var node=document.getElementById("mapCanvas");
@@ -3194,52 +3236,93 @@ function mountMap(){
     });
     if(token!==mapMountToken || naverMapFailed){ map.destroy(); return; }
     var marker=located?new naver.maps.Marker({position:new naver.maps.LatLng(m.lat,m.lon),map:map,title:"내 위치"}):null;
-    mapInstance={kind:"naver",map:map,marker:marker};
+    mapInstance={kind:"naver",map:map,marker:marker,places:[]};
+    syncMapMarkers();
     var note=document.getElementById("mapMessage");
     if(note) note.textContent="네이버 지도를 표시하고 있습니다.";
   }).catch(function(){
     if(token===mapMountToken && node.isConnected) mountFallbackMap(node);
   });
 }
+function mapCategoriesHTML(){
+  var m=S.map, labels=[['all','전체'],['restaurant','식당'],['bank','은행']];
+  return labels.map(function(pair){
+    var count=pair[0]==="all"?m.items.length:m.items.filter(function(x){return x.category===pair[0];}).length;
+    return '<button data-l="mapcat" data-v="'+pair[0]+'" aria-pressed="'+(m.category===pair[0])+'">'
+      +pair[1]+(m.status==="ready"?' <small>'+count+'</small>':'')+'</button>';
+  }).join('');
+}
+function mapListHTML(){
+  var m=S.map, selected=visibleMapItems(), label=m.category==="bank"?"은행":m.category==="restaurant"?"식당":"식당·은행";
+  var h='<h3>주변 '+label+'</h3>';
+  if(m.lat==null || m.lon==null) return h+'<p class="map-note">내 주변 찾기를 누르면 식당과 은행을 찾아 드립니다.</p>';
+  if(m.status==="loading") return h+'<p class="map-note">가게와 은행을 찾고 있습니다.</p>';
+  if(m.status==="error") return h+'<p class="map-note">검색 결과를 가져오지 못했습니다. 다시 시도해 주세요.</p>';
+  if(!selected.length) return h+'<p class="map-note">근처에 등록된 '+label+' 정보를 찾지 못했습니다.</p>';
+  selected.forEach(function(x){
+    var link='https://www.openstreetmap.org/'+x.type+'/'+x.id;
+    h+='<a class="map-row '+x.category+'" href="'+link+'" target="_blank" rel="noopener noreferrer">'
+      +'<span class="map-kind">'+(x.category==="bank"?"은행":"식당")+'</span>'+esc(x.name)
+      +'<small>OpenStreetMap에서 장소 정보 보기 · 실습 참여 여부 미확인</small></a>';
+  });
+  return h;
+}
+function setMapCategory(category){
+  if(["all","restaurant","bank"].indexOf(category)<0) return;
+  S.map.category=category;
+  var buttons=document.getElementById("mapCategories"), results=document.getElementById("mapResults");
+  if(buttons) Array.prototype.forEach.call(buttons.querySelectorAll("button"),function(button){
+    button.setAttribute("aria-pressed",String(button.getAttribute("data-v")===category));
+  });
+  if(results) results.innerHTML=mapListHTML();
+  syncMapMarkers();
+}
 function vMap(){
   var m=S.map, h='<div class="lobby">'+lbTop("주변 가게 지도")
-    +'<div class="map-intro"><h2>주변 가게 찾기</h2>'
-    +'<p>지도를 바로 살펴볼 수 있습니다. 내 주변 찾기를 누르면 현재 위치로 이동하고 근처 카페·음식점 목록을 보여 드립니다.</p>'
+    +'<div class="map-intro"><h2>주변 식당·은행 찾기</h2>'
+    +'<p>식당과 은행을 골라 볼 수 있습니다. 내 주변 찾기를 누르면 현재 위치로 이동해 가까운 곳을 검색합니다.</p>'
+    +'<div id="mapCategories" class="map-categories" role="group" aria-label="지도 장소 종류">'+mapCategoriesHTML()+'</div>'
     +'<button class="bigact" data-l="maploc"'+(m.status==="loading"?' disabled':'')+'>'+(m.status==="loading"?'찾는 중…':'내 주변 찾기')+'</button>';
   if(m.error) h+='<p class="map-error" role="alert">'+esc(m.error)+'</p>';
   h+='<p class="map-note">'+(m.lat!=null?'현재 위치 주변 지도입니다.':'기본 지도는 대한민국 중심입니다. 위치 권한 없이 둘러볼 수 있습니다.')+'</p>'
     +'<p id="mapMessage" class="map-note" role="status">네이버 지도를 불러오는 중입니다.</p>'
     +'<div id="mapCanvas" class="map-frame" role="region" aria-label="주변 지도"></div>'
-    +'<p class="map-note">여기 나오는 곳은 지도에 등록된 일반 가게입니다. 연습 참여 가게인지 확인되지 않았으니 방문 전 가게에 문의해 주세요. 내 주변 찾기를 누르면 위치가 지도와 가게 검색 서비스에 전달되며, 위치와 검색 결과는 저장하지 않습니다.</p>';
-  if(m.lat!=null && m.lon!=null){
-    h+='</div><div class="map-list"><h3>주변 가게</h3>';
-    if(m.status==="loading") h+='<p class="map-note">가게 목록을 찾고 있습니다.</p>';
-    else if(!m.items.length) h+='<p class="map-note">지도 정보가 부족하거나 검색이 일시적으로 안 됩니다. 지도를 눌러 주변을 살펴보세요.</p>';
-    m.items.forEach(function(x){
-      var link='https://www.openstreetmap.org/'+x.type+'/'+x.id;
-      h+='<a class="map-row" href="'+link+'" target="_blank" rel="noopener noreferrer">'
-        +esc(x.name)+'<small>지도에서 보기 · 실습 참여 여부 미확인</small></a>';
-    });
-    h+='</div>';
-  }else h+='</div>';
-  h+='<p class="lbnote">주변 가게 목록: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap 기여자</a></p></div>';
+    +'<p class="map-note">표시된 곳은 일반 식당·은행이며 키오스크 실습 참여 여부는 확인되지 않았습니다. 방문 전 해당 장소에 문의해 주세요. 내 주변 찾기를 누르면 위치가 지도와 장소 검색 서비스에 전달되며, 위치와 검색 결과는 저장하지 않습니다.</p>'
+    +'</div><div id="mapResults" class="map-list">'+mapListHTML()+'</div>';
+  h+='<p class="lbnote">주변 장소 목록: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap 기여자</a></p></div>';
   return h;
 }
 function findNearby(){
   if(!navigator.geolocation){ S.map.error="이 기기에서는 위치 기능을 사용할 수 없습니다."; render(); return; }
-  S.map.status="loading"; S.map.error=""; render();
+  S.map.status="loading"; S.map.error=""; S.map.items=[]; render();
   navigator.geolocation.getCurrentPosition(function(pos){
     var lat=+pos.coords.latitude.toFixed(5), lon=+pos.coords.longitude.toFixed(5);
     S.map.lat=lat; S.map.lon=lon; render();
-    var q='[out:json][timeout:20];nwr["amenity"~"^(cafe|fast_food|restaurant)$"](around:1000,'+lat+','+lon+');out center 50;';
+    var q='[out:json][timeout:20];nwr["amenity"~"^(restaurant|fast_food|bank)$"](around:1000,'+lat+','+lon+');out center;';
     fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:'data='+encodeURIComponent(q),
       headers:{'Content-Type':'application/x-www-form-urlencoded'}})
       .then(function(r){ if(!r.ok) throw new Error('map'); return r.json(); })
       .then(function(data){
-        S.map.items=(data.elements||[]).filter(function(x){return x.tags && x.tags.name;}).slice(0,30)
-          .map(function(x){return {type:x.type,id:x.id,name:x.tags['name:ko']||x.tags.name};});
+        var near=(data.elements||[]).filter(function(x){
+          return x.tags && x.tags.name && ["restaurant","fast_food","bank"].indexOf(x.tags.amenity)>-1;
+        }).map(function(x){
+          var point=x.center||x;
+          return {type:x.type,id:x.id,name:x.tags['name:ko']||x.tags.name,
+            category:x.tags.amenity==="bank"?"bank":"restaurant",lat:point.lat,lon:point.lon};
+        }).filter(function(x){return Number.isFinite(x.lat) && Number.isFinite(x.lon);});
+        var cos=Math.cos(lat*Math.PI/180);
+        near.sort(function(a,b){
+          var da=(a.lat-lat)**2+((a.lon-lon)*cos)**2, db=(b.lat-lat)**2+((b.lon-lon)*cos)**2;
+          return da-db;
+        });
+        var counts={restaurant:0,bank:0};
+        S.map.items=near.filter(function(x){
+          if(counts[x.category]>=25) return false;
+          counts[x.category]++;
+          return true;
+        });
         S.map.status="ready"; if(S.mode==="lobby"&&S.lv==="map") render();
-      }).catch(function(){S.map.status="error";S.map.error="가게 목록을 가져오지 못했습니다. 잠시 후 다시 눌러 주세요.";
+      }).catch(function(){S.map.status="error";S.map.error="주변 장소 목록을 가져오지 못했습니다. 잠시 후 다시 눌러 주세요.";
         if(S.mode==="lobby"&&S.lv==="map") render();});
   },function(err){ S.map.status="error";
     S.map.error=err.code===1?"위치 권한이 꺼져 있습니다. 브라우저 설정에서 허용해 주세요.":"현재 위치를 확인하지 못했습니다. 다시 눌러 주세요.";
@@ -5155,6 +5238,7 @@ function lobbyAct(lb){
     return;
   }
   if(a==="maploc"){findNearby();return;}
+  if(a==="mapcat"){setMapCategory(v);return;}
   if(a==="orgsave"){
     var selected=document.getElementById("orgCurrent"), u=curUser();
     if(u && selected){u.org=selected.value;saveUsers();S.lv="home";render();toast("도서관 이름을 화면에 표시했습니다.");}
