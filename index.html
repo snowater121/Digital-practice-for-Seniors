@@ -2191,7 +2191,7 @@ function paintMission(){
 }
 function closeMission(){ S.missionOpen=false; paintMission(); el.tbar.hidden=!timerVisible(); }
 function render(){
-  if(mapInstance){ mapInstance.remove(); mapInstance=null; }
+  clearMap();
   document.documentElement.setAttribute("data-mode",S.mode);
   el.timer.setAttribute("aria-pressed",String(S.timerOn));
   el.timer.querySelector("small").textContent=S.timerOn?"켜짐":"꺼짐";
@@ -3126,19 +3126,80 @@ function nextTodo(){
   }
   return null;
 }
-/* 기본 지도는 GPS 없이 표시합니다. 위치 좌표와 검색 결과는 저장하지 않습니다. */
-var mapInstance=null;
+/* 지도는 위치 허용 전에도 표시합니다. Client Secret과 위치 좌표는 저장하지 않습니다. */
+var NAVER_MAP_CLIENT_ID="gl61r2i8ba";
+var mapInstance=null, mapMountToken=0, naverMapPromise=null, naverMapFailed=false;
+function clearMap(){
+  mapMountToken++;
+  if(!mapInstance) return;
+  if(mapInstance.kind==="naver"){
+    if(mapInstance.marker) mapInstance.marker.setMap(null);
+    mapInstance.map.destroy();
+  }else mapInstance.map.remove();
+  mapInstance=null;
+}
+function loadNaverMap(){
+  if(naverMapFailed) return Promise.reject(new Error("naver map unavailable"));
+  if(window.naver && naver.maps && naver.maps.Map) return Promise.resolve();
+  if(!naverMapPromise){
+    naverMapPromise=new Promise(function(resolve,reject){
+      var script=document.createElement("script");
+      var timeout=setTimeout(function(){
+        naverMapFailed=true;
+        reject(new Error("naver map timed out"));
+      },12000);
+      script.src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId="+encodeURIComponent(NAVER_MAP_CLIENT_ID);
+      script.onload=function(){
+        clearTimeout(timeout);
+        if(!naverMapFailed && window.naver && naver.maps && naver.maps.Map) resolve();
+        else reject(new Error("naver map unavailable"));
+      };
+      script.onerror=function(){ clearTimeout(timeout); reject(new Error("naver map load failed")); };
+      document.head.appendChild(script);
+    }).catch(function(err){ naverMapFailed=true; throw err; });
+  }
+  return naverMapPromise;
+}
+window.navermap_authFailure=function(){
+  naverMapFailed=true;
+  if(S.mode==="lobby" && S.lv==="map"){
+    clearMap();
+    var node=document.getElementById("mapCanvas");
+    if(node) mountFallbackMap(node);
+  }
+};
+function mountFallbackMap(node){
+  var note=document.getElementById("mapMessage");
+  if(note) note.textContent="네이버 지도 인증 또는 연결에 실패해 기본 지도를 표시합니다. 네이버 클라우드의 Web 서비스 URL을 확인해 주세요.";
+  if(!window.L){ node.textContent="지도를 불러오지 못했습니다. 인터넷 연결을 확인해 주세요."; return; }
+  var m=S.map, located=m.lat!=null && m.lon!=null;
+  var map=L.map(node,{scrollWheelZoom:false}).setView(located?[m.lat,m.lon]:[36.35,127.8],located?16:7);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    maxZoom:19, attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap 기여자</a>'
+  }).addTo(map);
+  if(located) L.circleMarker([m.lat,m.lon],{radius:10,color:'#124B9B',weight:3,fillColor:'#fff',fillOpacity:1})
+    .addTo(map).bindPopup('내 위치');
+  mapInstance={kind:"leaflet",map:map};
+}
 function mountMap(){
   var node=document.getElementById("mapCanvas");
   if(!node) return;
-  if(!window.L){ node.textContent="지도 파일을 불러오지 못했습니다. 페이지를 새로고침해 주세요."; return; }
-  var m=S.map, hasLocation=m.lat!=null && m.lon!=null;
-  mapInstance=L.map(node,{scrollWheelZoom:false}).setView(hasLocation?[m.lat,m.lon]:[36.35,127.8],hasLocation?16:7);
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
-    maxZoom:19, attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap 기여자</a>'
-  }).addTo(mapInstance);
-  if(hasLocation) L.circleMarker([m.lat,m.lon],{radius:10,color:'#124B9B',weight:3,fillColor:'#fff',fillOpacity:1})
-    .addTo(mapInstance).bindPopup('내 위치');
+  var token=mapMountToken;
+  loadNaverMap().then(function(){
+    if(token!==mapMountToken || !node.isConnected || naverMapFailed) return;
+    var m=S.map, located=m.lat!=null && m.lon!=null;
+    var map=new naver.maps.Map(node,{
+      center:new naver.maps.LatLng(located?m.lat:36.35,located?m.lon:127.8),
+      zoom:located?16:7, zoomControl:true, gl:false
+    });
+    if(token!==mapMountToken || naverMapFailed){ map.destroy(); return; }
+    var marker=located?new naver.maps.Marker({position:new naver.maps.LatLng(m.lat,m.lon),map:map,title:"내 위치"}):null;
+    mapInstance={kind:"naver",map:map,marker:marker};
+    var note=document.getElementById("mapMessage");
+    if(note) note.textContent="네이버 지도를 표시하고 있습니다.";
+  }).catch(function(){
+    if(token===mapMountToken && node.isConnected) mountFallbackMap(node);
+  });
 }
 function vMap(){
   var m=S.map, h='<div class="lobby">'+lbTop("주변 가게 지도")
@@ -3147,6 +3208,7 @@ function vMap(){
     +'<button class="bigact" data-l="maploc"'+(m.status==="loading"?' disabled':'')+'>'+(m.status==="loading"?'찾는 중…':'내 주변 찾기')+'</button>';
   if(m.error) h+='<p class="map-error" role="alert">'+esc(m.error)+'</p>';
   h+='<p class="map-note">'+(m.lat!=null?'현재 위치 주변 지도입니다.':'기본 지도는 대한민국 중심입니다. 위치 권한 없이 둘러볼 수 있습니다.')+'</p>'
+    +'<p id="mapMessage" class="map-note" role="status">네이버 지도를 불러오는 중입니다.</p>'
     +'<div id="mapCanvas" class="map-frame" role="region" aria-label="주변 지도"></div>'
     +'<p class="map-note">여기 나오는 곳은 지도에 등록된 일반 가게입니다. 연습 참여 가게인지 확인되지 않았으니 방문 전 가게에 문의해 주세요. 내 주변 찾기를 누르면 위치가 지도와 가게 검색 서비스에 전달되며, 위치와 검색 결과는 저장하지 않습니다.</p>';
   if(m.lat!=null && m.lon!=null){
@@ -3160,7 +3222,7 @@ function vMap(){
     });
     h+='</div>';
   }else h+='</div>';
-  h+='<p class="lbnote"><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap 기여자</a></p></div>';
+  h+='<p class="lbnote">주변 가게 목록: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap 기여자</a></p></div>';
   return h;
 }
 function findNearby(){
