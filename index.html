@@ -2043,7 +2043,7 @@ var S = {
   bk:freshBank(), tr:null, tb:null, big:false, picker:false,
   cls:null, lv:"home", name:"", recRange:"day", helpTab:null,
   ufnm:"", ufpin:"", uorg:"", uq:null, uqpin:"", uerr:"", umove:null,
-  demoId:"demo001", demoProvider:"", demoError:"",
+  demoId:"", demoProvider:"", demoError:"",
   missionOpen:false, map:{status:"idle",items:[],lat:null,lon:null,error:"",category:"all"}
 };
 var HINT=null, tick=null, justCleared=false, installPrompt=null;
@@ -2066,6 +2066,7 @@ function resetDaily(){
 var UKEY="kiosk-users-v1";
 var USERS={list:[],cur:""};
 var DEMO_SESSION_KEY="digital-practice-portal-demo-session-v1", demoSessionId="";
+var DEMO_PASSWORD="demo1234";
 var INSTITUTIONS={
   hansung:{name:"한성대학교",logo:"./icons/hansung-university.png"},
   seoul:{name:"서울도서관",logo:"./icons/seoul-metropolitan-library.png",wide:true},
@@ -2127,13 +2128,17 @@ function newUser(nm,pin,org){
   USERS.list.push({id:id,nm:nm,pin:pin||"",org:org||""}); saveUsers();
   return id;
 }
-function loginPortalDemo(raw,provider){
+function loginPortalDemo(raw,password,provider){
   var org=INSTITUTIONS[provider];
   if(!org){ S.demoError="로그인할 기관을 먼저 골라 주세요."; render(); return; }
   var demo=String(raw||"").trim().toLowerCase();
   S.demoId=demo;
   if(!/^demo[a-z0-9_-]{0,12}$/.test(demo)){
     S.demoError="체험용 아이디만 입력해 주세요. 예: demo001. 실제 학번이나 비밀번호는 입력하지 마세요.";
+    render(); return;
+  }
+  if(password!==DEMO_PASSWORD){
+    S.demoError="아이디 또는 비밀번호가 맞지 않습니다. 체험용 아이디 demo001, 비밀번호 demo1234를 입력해 주세요.";
     render(); return;
   }
   var id="portal-demo:"+provider+":"+demo, oldClass=S.cls;
@@ -4801,6 +4806,12 @@ el.screen.addEventListener("click", function(e){
 });
 el.screen.addEventListener("keydown", function(e){
   if(e.key!=="Enter") return;
+  if(e.target.id==="demoPassword"){
+    e.preventDefault();
+    var loginButton=el.screen.querySelector('[data-l="demologin"]');
+    if(loginButton) loginButton.click();
+    return;
+  }
   if(e.target.id==="acctIn"){
     e.preventDefault();
     var fake=document.createElement("button"); fake.setAttribute("data-b","acctok");
@@ -5175,11 +5186,14 @@ function vUser(){
     +'<p class="uask">기관을 고르면 해당 로고가 표시됩니다.</p>'
     +'<div class="ufield"><label for="demoProvider">기관 선택</label><select id="demoProvider">'+demoProviderOptions()+'</select></div>'
     +(selectedOrg?'<div class="demo-logo-preview"><img src="'+selectedOrg.logo+'" alt="'+esc(selectedOrg.name)+' 로고"></div>':'')
-    +'<div class="ufield"><label for="demoId">체험용 아이디</label>'
-    +'<input id="demoId" value="'+esc(S.demoId).replace(/"/g,"&quot;")+'" placeholder="demo001" maxlength="16" autocomplete="off" spellcheck="false"></div>'
+    +'<div class="ufield"><label for="demoId">아이디</label>'
+    +'<input id="demoId" value="'+esc(S.demoId).replace(/"/g,"&quot;")+'" placeholder="아이디 입력" maxlength="16" autocomplete="off" autocapitalize="none" spellcheck="false"></div>'
+    +'<div class="ufield"><label for="demoPassword">비밀번호</label>'
+    +'<input id="demoPassword" type="password" placeholder="비밀번호 입력" autocomplete="off"></div>'
     +(S.demoError?'<p class="uerr" role="alert">'+esc(S.demoError)+'</p>':'')
     +'<button class="bigact" data-l="demologin">'+(selectedOrg?esc(selectedOrg.name)+' 로그인':'기관을 선택하고 로그인')+'</button>'
-    +'<p class="unote">현재 기관 포털 인증은 연결되지 않았습니다. demo로 시작하는 체험용 아이디만 사용하세요. 실제 학번·비밀번호는 입력하지 마세요.</p></div></div>';
+    +'<p class="unote">체험용 아이디 demo001 · 비밀번호 demo1234</p>'
+    +'<p class="unote">현재 기관 포털 인증은 연결되지 않았습니다. 실제 학번·비밀번호는 입력하지 마세요.</p></div></div>';
 
   var localUsers=USERS.list.filter(function(u){return !u.portalDemo;});
   h+='<div class="lbsection"><div class="lbsec"><h2>이 기기에서 이름 고르기</h2><span>'+localUsers.length+'명</span></div>'
@@ -5407,8 +5421,10 @@ function lobbyAct(lb){
   if(a==="maploc"){findNearby();return;}
   if(a==="mapcat"){setMapCategory(v);return;}
   if(a==="demologin"){
-    var demoInput=document.getElementById("demoId");
-    loginPortalDemo(demoInput?demoInput.value:S.demoId,S.demoProvider); return;
+    var demoInput=document.getElementById("demoId"), passwordInput=document.getElementById("demoPassword");
+    var password=passwordInput?passwordInput.value:"";
+    if(passwordInput) passwordInput.value="";
+    loginPortalDemo(demoInput?demoInput.value:S.demoId,password,S.demoProvider); return;
   }
   if(a==="demologout"){
     useUser(""); S.demoProvider=""; S.demoError=""; paintDaily(); render(); el.screen.scrollTop=0;

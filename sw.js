@@ -1,4 +1,4 @@
-const CACHE = 'digital-practice-v9';
+const CACHE = 'digital-practice-v10';
 const APP = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/hansung-university.png', './icons/seoul-metropolitan-library.png', './icons/namsan-library.png', './icons/gyeonggi-library.png', './vendor/leaflet/leaflet.js', './vendor/leaflet/leaflet.css'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(APP)).then(() => self.skipWaiting()));
