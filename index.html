@@ -793,8 +793,13 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 
 /* 머리 — 인사와 오늘 할 일을 한 덩어리로 */
 .lbhead{background:var(--brand);color:#fff;padding:calc(var(--lu)*16) calc(var(--lu)*16) calc(var(--lu)*18)}
-.lbhead .row{display:flex;align-items:center;justify-content:space-between;gap:calc(var(--lu)*10)}
+.lbhead .row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:calc(var(--lu)*10)}
 .lbhead .tagx{font-size:calc(var(--lu)*12.5);font-weight:700;letter-spacing:.02em;opacity:.88}
+.lbbrand{display:flex;align-items:center;gap:calc(var(--lu)*9);min-width:0}
+.lbbrand img{display:block;flex:none;width:calc(var(--lu)*48);height:calc(var(--lu)*42);object-fit:contain;
+  padding:3px;border-radius:8px;background:#fff}
+.lbbrand .tagx{display:block;min-width:0;line-height:1.25;font-size:calc(var(--lu)*14);opacity:1}
+.lbbrand .tagx small{display:block;font-size:calc(var(--lu)*12);font-weight:700;color:#E1ECFF}
 .lbbigbtn{flex:none;background:rgba(255,255,255,.14);color:#fff;border:1.5px solid rgba(255,255,255,.55);
   border-radius:999px;padding:calc(var(--lu)*11) calc(var(--lu)*17);font-size:calc(var(--lu)*13.5);
   font-weight:700;white-space:nowrap;min-height:calc(var(--lu)*46)}
@@ -1459,6 +1464,25 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 .lbwho .ch{flex:none;display:flex;align-items:center;background:#fff;color:var(--brand);border-radius:999px;
   padding:calc(var(--lu)*10) calc(var(--lu)*14);font-size:calc(var(--lu)*14);font-weight:800;
   white-space:nowrap;min-height:calc(var(--lu)*44)}
+.demo-card{margin:calc(var(--lu)*14) 0;padding:calc(var(--lu)*16);border:2px solid var(--brand);
+  border-radius:calc(var(--lu)*12);background:#F5F8FD}
+.demo-card .demo-brand{display:flex;align-items:center;gap:calc(var(--lu)*12)}
+.demo-card .demo-brand img{width:calc(var(--lu)*60);height:calc(var(--lu)*52);object-fit:contain;background:#fff;border-radius:8px;padding:4px}
+.demo-card .demo-brand b{font-size:calc(var(--lu)*18);line-height:1.35;text-wrap:balance}
+.demo-profile{display:grid;grid-template-columns:auto 1fr;gap:8px 12px;margin-top:calc(var(--lu)*15);
+  padding:calc(var(--lu)*13);border-radius:8px;background:#fff;font-size:calc(var(--lu)*15);line-height:1.5}
+.demo-profile span{color:var(--k-mut)}
+.demo-profile b{min-width:0;overflow-wrap:anywhere}
+.demo-label{display:inline-block;margin-top:calc(var(--lu)*10);padding:4px 9px;border-radius:6px;
+  background:#E1EBF9;color:var(--brand);font-size:calc(var(--lu)*14);font-weight:800}
+.mileage-total{margin:calc(var(--lu)*13) 0 0;font-size:calc(var(--lu)*31);line-height:1.15;
+  font-weight:900;color:var(--brand);font-variant-numeric:tabular-nums}
+.mileage-total small{font-size:calc(var(--lu)*17);margin-left:4px}
+.mileage-progress{height:12px;width:100%;border-radius:999px;background:#DFE7F2;overflow:hidden;margin:12px 0 6px}
+.mileage-progress span{display:block;height:100%;background:var(--brand);border-radius:999px}
+.mileage-entry{padding:calc(var(--lu)*13) 0;border-top:1px solid var(--k-line);font-size:calc(var(--lu)*15);line-height:1.5}
+.mileage-entry b{display:block;font-size:calc(var(--lu)*17)}
+.mileage-entry small{display:block;color:var(--k-mut);font-size:calc(var(--lu)*14)}
 
 .urow .uav{flex:none;width:calc(var(--lu)*44);height:calc(var(--lu)*44);border-radius:50%;
   background:#E8EEF9;color:var(--brand);display:flex;align-items:center;justify-content:center;
@@ -2014,6 +2038,7 @@ var S = {
   bk:freshBank(), tr:null, tb:null, big:false, picker:false,
   cls:null, lv:"home", name:"", recRange:"day", helpTab:null,
   ufnm:"", ufpin:"", uorg:"", uq:null, uqpin:"", uerr:"", umove:null,
+  demoId:"demo001", demoError:"",
   missionOpen:false, map:{status:"idle",items:[],lat:null,lon:null,error:"",category:"all"}
 };
 var HINT=null, tick=null, justCleared=false, installPrompt=null;
@@ -2035,6 +2060,16 @@ function resetDaily(){
    손님은 본래 열쇠를 그대로 쓰고, 이름을 고르면 열쇠 뒤에 그 사람 번호가 붙습니다. */
 var UKEY="kiosk-users-v1";
 var USERS={list:[],cur:""};
+var DEMO_SESSION_KEY="digital-practice-portal-demo-session-v1", demoSessionId="";
+var INSTITUTIONS={hansung:{name:"한성대학교",logo:"./icons/hansung-university.png"}};
+function setDemoSession(id){
+  demoSessionId=id||"";
+  try{ if(demoSessionId) sessionStorage.setItem(DEMO_SESSION_KEY,demoSessionId);
+       else sessionStorage.removeItem(DEMO_SESSION_KEY); }catch(e){}
+}
+function loadDemoSession(){
+  try{ demoSessionId=sessionStorage.getItem(DEMO_SESSION_KEY)||""; }catch(e){demoSessionId="";}
+}
 function loadUsers(){
   try{ var p=JSON.parse(localStorage.getItem(UKEY)||"null");
        if(p && p.list instanceof Array){ USERS.list=p.list; USERS.cur=p.cur||""; } }catch(e){}
@@ -2045,6 +2080,10 @@ function findUser(id){ var i; for(i=0;i<USERS.list.length;i++){ if(USERS.list[i]
 function curUser(){ return findUser(USERS.cur); }
 function userName(){ var u=curUser(); return u?u.nm:""; }
 function userOrg(){ var u=curUser(); return u && u.org ? u.org : ""; }
+function demoInstitution(){
+  var u=curUser();
+  return u && u.portalDemo && demoSessionId===u.id ? INSTITUTIONS[u.provider]||null : null;
+}
 function pkey(b){ return USERS.cur ? b+":"+USERS.cur : b; }
 /* 그 사람 몫에 쌓인 기록이 있는지 (id가 빈 값이면 손님 몫) */
 function slotHas(id){
@@ -2064,6 +2103,7 @@ function moveGuestTo(id){
   });
 }
 function useUser(id){
+  if(id!==demoSessionId) setDemoSession("");
   USERS.cur=id||""; saveUsers();
   LOG={days:{}}; resetDaily();
   S.big=false; S.cls=null; S.name=""; S.timerOn=true;
@@ -2076,6 +2116,48 @@ function newUser(nm,pin,org){
   var id="u"+Date.now().toString(36)+Math.floor(Math.random()*1296).toString(36);
   USERS.list.push({id:id,nm:nm,pin:pin||"",org:org||""}); saveUsers();
   return id;
+}
+function loginPortalDemo(raw,provider){
+  provider=provider||"hansung";
+  var org=INSTITUTIONS[provider];
+  if(!org){ S.demoError="아직 연결할 수 없는 기관입니다."; render(); return; }
+  var demo=String(raw||"").trim().toLowerCase();
+  S.demoId=demo;
+  if(!/^demo[a-z0-9_-]{0,12}$/.test(demo)){
+    S.demoError="시연용 아이디만 입력해 주세요. 예: demo001. 실제 학번이나 비밀번호는 입력하지 마세요.";
+    render(); return;
+  }
+  var id="portal-demo:"+provider+":"+demo, oldClass=S.cls;
+  if(!findUser(id)){
+    USERS.list.push({id:id,nm:"시연 사용자",org:org.name,provider:provider,demoId:demo,portalDemo:true});
+    saveUsers();
+  }
+  setDemoSession(id);
+  useUser(id);
+  if(!S.cls && oldClass){ S.cls=oldClass; save(); loadDaily(); S.lv="home"; }
+  S.demoError="";
+  paintDaily(); render(); el.screen.scrollTop=0;
+  toast(org.name+" 로그인 시연을 시작했습니다. 미션을 마치면 마일리지가 쌓입니다.",true);
+}
+function demoMileageKey(){ return "digital-practice-demo-mileage-v1:"+USERS.cur; }
+function demoMileage(){
+  if(!demoInstitution()) return {entries:[],points:0};
+  try{
+    var data=JSON.parse(localStorage.getItem(demoMileageKey())||"null");
+    if(data && Array.isArray(data.entries)){
+      var entries=data.entries.filter(function(x){return x && x.date && x.mode && Number.isInteger(x.mi) && x.points===10;});
+      return {entries:entries,points:entries.length*10};
+    }
+  }catch(e){}
+  return {entries:[],points:0};
+}
+function earnDemoMileage(mode,mi){
+  if(!demoInstitution()) return 0;
+  var date=todayStr(), data=demoMileage();
+  if(data.entries.some(function(x){return x.date===date && x.mode===mode && x.mi===mi;})) return 0;
+  data.entries.unshift({date:date,mode:mode,mi:mi,points:10});
+  try{ localStorage.setItem(demoMileageKey(),JSON.stringify({entries:data.entries})); }catch(e){return 0;}
+  return 10;
 }
 function todayStr(){var d=new Date();return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
 function yesterdayStr(){var d=new Date();d.setDate(d.getDate()-1);return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
@@ -2103,6 +2185,7 @@ function recordClear(mode,mi){
   var k=mkey(mode,mi);
   justCleared = DAILY.cleared.indexOf(k)<0;
   if(justCleared) DAILY.cleared.push(k);
+  var earned=justCleared?earnDemoMileage(mode,mi):0;
   if(!DAILY.allClear) DAILY.allClear=[];
   if(DAILY.allClear.indexOf(k)<0) DAILY.allClear.push(k);
   if(!DAILY.attended){            /* 하루 한 가지만 해도 출석 */
@@ -2117,8 +2200,8 @@ function recordClear(mode,mi){
   if(DAILY.cleared.length>=3) DAILY.dayDone=true;
   saveDaily(); paintDaily();
   if(S.mode==="bank"||S.mode==="train"||S.mode==="table"){
-    toast("미션 성공!"+(LASTRES?" 걸린 시간 "+secTxt(LASTRES.s)+" · 헤맨 횟수 "+LASTRES.w+"번":"")+(justCleared?" · 오늘 "+Math.min(DAILY.cleared.length,3)+"/3":""),true);
-  }
+    toast("미션 성공!"+(LASTRES?" 걸린 시간 "+secTxt(LASTRES.s)+" · 헤맨 횟수 "+LASTRES.w+"번":"")+(justCleared?" · 오늘 "+Math.min(DAILY.cleared.length,3)+"/3":"")+(earned?" · 시연 마일리지 +10P":""),true);
+  }else if(earned) toast("미션 성공! 시연 마일리지 +10P",true);
 }
 /* 추천 미션: 오늘의 세 가지 중 아직 안 한 것 → 없으면 아무 미션이나 */
 function nextDailyTask(){
@@ -2214,12 +2297,13 @@ function render(){
     document.documentElement.setAttribute("data-big",S.big?"1":"0");
     if(!S.cls && S.lv!=="class") S.lv="class";
     el.screen.innerHTML = S.lv==="class"?vClass() : S.lv==="record"?vRecord() : S.lv==="help"?vHelp()
-      : S.lv==="user"?vUser() : S.lv==="map"?vMap() : vLobby();
+      : S.lv==="user"?vUser() : S.lv==="mileage"?vMileage() : S.lv==="map"?vMap() : vLobby();
     el.tbar.hidden=true;
     el.mission.innerHTML = S.lv==="class"?"반을 고르면 그 반에 맞는 연습을 매일 세 가지씩 골라 드립니다."
       : S.lv==="record"?"오늘 한 연습을 노션에 올릴 글로 만들어 드립니다."
       : S.lv==="help"?"막혔을 때 할 일과 낯선 말 풀이입니다."
-      : S.lv==="user"?"이름을 고르지 않아도 연습과 출석은 모두 됩니다. 이름은 기록을 이어가기 위한 것입니다."
+      : S.lv==="user"?"기관 로그인 시연과 기기 안에서 이름을 고르는 기능이 있습니다. 손님도 연습할 수 있습니다."
+      : S.lv==="mileage"?"발표용 시연 마일리지와 혜택 예시입니다."
       : "로비에서 오늘 할 연습을 고르세요. 아래 ‘가게 고르기’로 바로 열 수도 있습니다.";
     var tg0=document.querySelector(".mission .tag"); tg0.textContent="안내"; tg0.className="tag";
     el.swap.hidden=true; paintDaily(); if(S.lv==="home") lobbyScrollHint(); else el.screen.onscroll=null;
@@ -3329,6 +3413,48 @@ function findNearby(){
     if(S.mode==="lobby"&&S.lv==="map") render();
   },{enableHighAccuracy:false,timeout:10000,maximumAge:300000});
 }
+function lobbyBrandHTML(){
+  var org=demoInstitution();
+  if(org) return '<span class="lbbrand"><img src="'+org.logo+'" alt=""><span class="tagx"><small>'
+    +esc(org.name)+'</small>디지털 연습소</span></span>';
+  return '<span class="tagx">'+(userOrg()?esc(userOrg())+' · ':'')+'디지털 연습소</span>';
+}
+function mileagePreviewHTML(){
+  var org=demoInstitution();
+  if(!org) return '<div class="lbsection"><div class="lbsec"><h2>마일리지</h2><span>기관 로그인 시연</span></div>'
+    +'<p class="uask">손님으로도 모든 연습과 출석을 이용할 수 있습니다. 마일리지는 기관 로그인 시연 후 완료한 연습에만 적립됩니다.</p>'
+    +'<button class="uplain" data-l="lv" data-v="user">기관 로그인 시연하기</button></div>';
+  var points=demoMileage().points;
+  return '<div class="lbsection"><div class="lbsec"><h2>내 마일리지</h2><span>발표용 시연</span></div>'
+    +'<div class="mileage-total">'+points+'<small>P</small></div>'
+    +'<p class="unote">연습 하나를 처음 마칠 때마다 10P · 같은 연습은 하루 한 번만 적립</p>'
+    +'<button class="uplain" data-l="lv" data-v="mileage">적립 내역과 혜택 예시 보기</button></div>';
+}
+function vMileage(){
+  var org=demoInstitution();
+  if(!org) return '<div class="lobby">'+lbTop("마일리지")
+    +'<div class="lbsection"><div class="lbsec"><h2>기관 로그인 후 적립</h2></div>'
+    +'<p class="uask">연습은 로그인 없이도 이용할 수 있습니다. 마일리지 시연은 기관 계정으로 들어온 뒤부터 시작됩니다.</p>'
+    +'<button class="bigact" data-l="lv" data-v="user">기관 로그인 시연하기</button></div></div>';
+  var data=demoMileage(), points=data.points, left=Math.max(0,100-points);
+  var entries=data.entries.slice(0,20).map(function(x){
+    var mission=MISSIONS[x.mode] && MISSIONS[x.mode][x.mi];
+    var title=mission?mission.t.replace(/<[^>]*>/g,""):"연습 완료";
+    return '<div class="mileage-entry"><b>'+esc(storeName(x.mode))+' · '+esc(title)+'</b>'
+      +'<small>'+esc(x.date)+' · +10P</small></div>';
+  }).join("");
+  return '<div class="lobby">'+lbTop("내 마일리지")
+    +'<div class="lbsection"><div class="lbsec"><h2>'+esc(org.name)+' 마일리지</h2><span>시연 데이터</span></div>'
+    +'<p class="mileage-total">'+points+'<small>P</small></p>'
+    +'<p class="unote">기관 로그인 후 새로 완료한 연습에 10P가 쌓입니다. 같은 연습은 하루 한 번만 적립합니다.</p></div>'
+    +'<div class="lbsection"><div class="lbsec"><h2>도서관 혜택 예시</h2><span>100P</span></div>'
+    +'<p class="uask">예시: 협약 도서관의 디지털 교육 프로그램 신청 혜택</p>'
+    +'<div class="mileage-progress" role="progressbar" aria-label="혜택 예시까지 진행률" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+Math.min(points,100)+'"><span style="width:'+Math.min(points,100)+'%"></span></div>'
+    +'<p class="unote">'+(left?left+'P 더 쌓으면 100P가 됩니다.':'100P에 도달했습니다.')+' 실제 혜택 교환은 기관 연동 후에만 가능합니다.</p></div>'
+    +'<div class="lbsection"><div class="lbsec"><h2>적립 내역</h2><span>최근 '+Math.min(data.entries.length,20)+'건</span></div>'
+    +(entries||'<p class="lbempty">아직 적립 내역이 없습니다. 오늘의 연습을 하나 완료해 보세요.</p>')+'</div>'
+    +'<p class="lbnote">이 화면의 로그인과 마일리지는 발표용 시연입니다. 학교 포털 인증·도서관 계정 조회·실제 혜택 교환과 연결되지 않으며, 기록은 이 기기에만 남습니다.</p></div>';
+}
 function vLobby(){
   var W=["일","월","화","수","목","금","토"];
   var now=new Date(), i, days=[];
@@ -3378,7 +3504,7 @@ function vLobby(){
 
   return '<div class="lobby">'
     +'<div class="lbhead">'
-      +'<div class="row"><span class="tagx">'+(userOrg()?esc(userOrg())+' · ':'')+'디지털 연습소</span>'
+      +'<div class="row">'+lobbyBrandHTML()
         +'<button class="lbbigbtn" data-l="big" aria-pressed="'+(S.big?"true":"false")+'">글씨 크게</button></div>'
       +'<div class="dtrow"><div class="dt">'+(now.getMonth()+1)+'월 '+now.getDate()+'일 '+W[now.getDay()]+'요일</div>'
         +'<button class="lbcls" data-l="lv" data-v="class">'+(S.cls||"기초반")+' <small>바꾸기</small></button></div>'
@@ -3387,6 +3513,7 @@ function vLobby(){
       +whoRow()
     +'</div>'
 
+    +mileagePreviewHTML()
     +'<div class="lbsection">'
       +'<div class="lbsec"><h2>출석부</h2><span>이번 주 '+weekOn+'일</span></div>'
       +(hasStamp?'':'<p class="lbempty">오늘 하나만 마치면 첫 도장이 찍힙니다.</p>')
@@ -4972,17 +5099,17 @@ function vClass(){
   +'</div>';
 }
 
-/* ===== 이름(로그인) — 기록을 이어가기 위한 것뿐. 안 골라도 연습·출석은 모두 됩니다 ===== */
+/* ===== 기관 로그인 시연과 기기 안의 이름 구분 ===== */
 function whoRow(){
-  var nm=userName();
+  var nm=userName(), org=demoInstitution();
   return '<button class="lbwho" data-l="lv" data-v="user">'
     +'<span class="ic">'+CI("user")+'</span>'
-    +'<span class="tx"><b>'+(nm? esc(nm)+'님으로 기록 중' : '손님으로 연습 중')+'</b>'
-      +'<small>'+(nm? (userOrg()?esc(userOrg())+' · ':'')+'다음에 오셔도 이 이름으로 이어집니다' : '연습과 출석은 그대로 됩니다 · 이름을 고르면 기록이 이어집니다')+'</small></span>'
-    +'<span class="ch">'+(nm?'바꾸기':'이름 고르기')+'</span></button>';
+    +'<span class="tx"><b>'+(org?esc(org.name)+' 로그인 시연 중':nm?esc(nm)+'님으로 기기 기록 중':'손님으로 연습 중')+'</b>'
+      +'<small>'+(org?'마일리지 '+demoMileage().points+'P · 이 기기에만 저장':nm?'마일리지 없이 기록만 이어집니다':'로그인 없이 연습 가능 · 마일리지는 기관 로그인 후')+'</small></span>'
+    +'<span class="ch">'+(org?'계정 보기':nm?'바꾸기':'로그인')+'</span></button>';
 }
 function vUser(){
-  var nm=userName(), i;
+  var nm=userName(), org=demoInstitution(), i;
 
   /* 손님으로 해 둔 것을 옮겨 담을지 묻기 */
   if(S.umove){
@@ -5012,14 +5139,37 @@ function vUser(){
       +'</div></div>';
   }
 
-  var h='<div class="lobby">'+lbTop(nm?"이름 바꾸기":"이름 고르기")
-    +'<div class="lbintro"><h2>'+(nm?'누구로 기록할까요?':'이름을 고르면<br>기록이 이어집니다')+'</h2>'
-      +'<p>이름을 고르지 않아도 <b>연습과 출석은 모두 됩니다.</b> 여러 사람이 함께 쓰는 기기에서는 이름을 골라야 내 기록만 모입니다.</p></div>';
+  var h='<div class="lobby">'+lbTop("기관 로그인")
+    +'<div class="lbintro"><h2>'+(org?"한성대학교 로그인 시연 중":"기관 계정으로<br>마일리지 적립 시연")+'</h2>'
+      +'<p>로그인하지 않아도 연습과 출석은 이용할 수 있습니다. 기관 로그인 시연 후 완료한 연습에만 마일리지가 쌓입니다.</p></div>';
 
-  h+='<div class="lbsection"><div class="lbsec"><h2>이름</h2><span>'+USERS.list.length+'명</span></div>';
-  if(!USERS.list.length) h+='<p class="lbempty">아직 적어 둔 이름이 없습니다. 아래에서 새로 적어 주세요.</p>';
-  for(i=0;i<USERS.list.length;i++){
-    var u=USERS.list[i], on=u.id===USERS.cur;
+  if(org){
+    h+='<div class="lbsection"><div class="demo-card"><div class="demo-brand"><img src="'+org.logo+'" alt=""><b>'+esc(org.name)+'<br>디지털 연습소</b></div>'
+      +'<span class="demo-label">포털 로그인 흐름 시연</span><p class="uask">시연 사용자로 들어왔습니다. 실제 학교 계정 인증은 연결되지 않았습니다.</p>'
+      +'<div class="demo-profile"><span>기관</span><b>'+esc(org.name)+'</b><span>표시 이름</span><b>'+esc(nm)+'</b>'
+      +'<span>계정 코드</span><b>'+esc(curUser().demoId||"시연용")+' (시연)</b></div>'
+      +'<p class="mileage-total">'+demoMileage().points+'<small>P</small></p>'
+      +'<button class="bigact" data-l="lv" data-v="mileage">마일리지 내역 보기</button>'
+      +'<button class="uplain" data-l="demologout">로그아웃하고 손님으로 쓰기</button></div></div>'
+      +'<p class="lbnote">이 계정과 마일리지는 이 기기에만 저장하는 발표용 예시입니다. 실제 학번과 비밀번호는 입력하지 마세요.</p>';
+    return h+'</div>';
+  }
+
+  h+='<div class="lbsection"><div class="demo-card"><div class="demo-brand"><img src="./icons/hansung-university.png" alt=""><b>한성대학교<br>포털 로그인 시연</b></div>'
+    +'<span class="demo-label">발표용 예시 · 실제 인증 아님</span>'
+    +'<p class="uask">실제 포털과 연결하지 않은 시연 화면입니다. 실제 학번·비밀번호는 입력하지 마세요.</p>'
+    +'<div class="ufield"><label for="demoId">시연용 아이디</label>'
+    +'<input id="demoId" value="'+esc(S.demoId).replace(/"/g,"&quot;")+'" placeholder="demo001" maxlength="16" autocomplete="off" spellcheck="false"></div>'
+    +(S.demoError?'<p class="uerr" role="alert">'+esc(S.demoError)+'</p>':'')
+    +'<button class="bigact" data-l="demologin" data-v="hansung">한성대학교로 로그인 시연</button>'
+    +'<p class="unote">실제 도서관 계정과 혜택 연동은 기관 협약 및 서버 구축 후 가능합니다.</p></div></div>';
+
+  var localUsers=USERS.list.filter(function(u){return !u.portalDemo;});
+  h+='<div class="lbsection"><div class="lbsec"><h2>이 기기에서 이름 고르기</h2><span>'+localUsers.length+'명</span></div>'
+    +'<p class="unote">기기 안의 이름은 기관 로그인이 아니며 마일리지가 적립되지 않습니다.</p>';
+  if(!localUsers.length) h+='<p class="lbempty">아직 적어 둔 이름이 없습니다. 아래에서 새로 적어 주세요.</p>';
+  for(i=0;i<localUsers.length;i++){
+    var u=localUsers[i], on=u.id===USERS.cur;
     h+='<button class="lbrow urow" data-l="user" data-v="'+u.id+'">'
       +'<span class="uav'+(on?" on":"")+'">'+esc(u.nm.slice(0,1))+'</span>'
       +'<span class="tx"><b>'+esc(u.nm)+'</b><small>'+(u.pin?'숫자 네 자리를 누르고 들어갑니다':'바로 들어갑니다')+'</small></span>'
@@ -5064,7 +5214,7 @@ function orgOptions(cur){
     +'<option value="코스모스 대학 도서관"'+(cur==='코스모스 대학 도서관'?' selected':'')+'>코스모스 대학 도서관 (예시)</option>';
 }
 function pickUser(id){
-  var u=findUser(id); if(!u) return;
+  var u=findUser(id); if(!u || u.portalDemo) return;
   if(id===USERS.cur){ S.lv="home"; render(); el.screen.scrollTop=0; return; }
   if(u.pin){ S.uq=id; S.uqpin=""; S.uerr=""; render(); el.screen.scrollTop=0; return; }
   enterUser(id);
@@ -5239,6 +5389,14 @@ function lobbyAct(lb){
   }
   if(a==="maploc"){findNearby();return;}
   if(a==="mapcat"){setMapCategory(v);return;}
+  if(a==="demologin"){
+    var demoInput=document.getElementById("demoId");
+    loginPortalDemo(demoInput?demoInput.value:S.demoId,v); return;
+  }
+  if(a==="demologout"){
+    useUser(""); S.demoError=""; paintDaily(); render(); el.screen.scrollTop=0;
+    toast("시연 로그아웃했습니다. 손님으로 계속 연습할 수 있습니다."); return;
+  }
   if(a==="orgsave"){
     var selected=document.getElementById("orgCurrent"), u=curUser();
     if(u && selected){u.org=selected.value;saveUsers();S.lv="home";render();toast("도서관 이름을 화면에 표시했습니다.");}
@@ -5306,7 +5464,9 @@ function boot(saved){
   if('serviceWorker' in navigator && location.protocol==='https:'){
     navigator.serviceWorker.register('./sw.js').catch(function(){});
   }
-  loadUsers(); loadLog(); loadPref(); loadDaily();
+  loadUsers(); loadDemoSession();
+  if(curUser() && curUser().portalDemo && !demoInstitution()){ USERS.cur=""; saveUsers(); }
+  loadLog(); loadPref(); loadDaily();
   if(userName()) S.name=userName();
   if(!S.cls) S.lv="class";
   el.timer.setAttribute("aria-pressed",String(S.timerOn));
