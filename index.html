@@ -781,7 +781,7 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
   --font-disp:'Do Hyeon','Noto Sans KR',sans-serif;
   --lu:1px;
 }
-[data-mode="lobby"][data-big="1"]{--lu:1.17px}
+[data-mode="lobby"][data-big="1"]{--lu:1.35px}
 .lobby{min-height:100%;background:var(--k-bg);color:var(--k-fg);font-family:var(--font-k);
   display:flex;flex-direction:column;position:relative}
 
@@ -1395,6 +1395,50 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 .lbnote{font-size:calc(var(--lu)*13.5)}
 
 
+/* ===== 로비는 연습 기기 틀을 쓰지 않습니다 =====
+   키오스크·뱅킹·기차는 실제 단말을 흉내 내야 하므로 검은 테두리와 도구 바 안에 둡니다.
+   그러나 로비는 어르신이 읽는 우리 화면이므로, 틀을 벗고 화면 전체를 씁니다.
+   (틀 안에 둘 때 위아래 약 25%가 9.5~13px짜리 도구 UI로 덮였습니다) */
+[data-mode="lobby"] .topbar{display:none}
+[data-mode="lobby"] .ctl{font-size:14.5px}
+[data-mode="lobby"] .ctl small{font-size:12px}
+[data-mode="lobby"] .stage{padding:0}
+[data-mode="lobby"] .device{border:0;border-radius:0;box-shadow:none}
+
+/* ===== 로비 글자 크기 — 고령자 기준(본문 16px 이상) =====
+   연습 화면의 자체 기준은 '13px 이상'인데, 그것은 실제 단말을 흉내 내기 위한 값입니다.
+   로비는 우리가 읽히려고 만든 화면이므로 기준을 따로 둡니다. */
+.lbhead .tagx{font-size:calc(var(--lu)*14)}
+.lbhead .dt{font-size:calc(var(--lu)*16)}
+.lbcls{font-size:calc(var(--lu)*16)}
+.lbcls small{font-size:calc(var(--lu)*14)}
+.lbcta .tx b{font-size:calc(var(--lu)*20)}
+.lbcta .tx small{font-size:calc(var(--lu)*16)}
+.lbsec span{font-size:calc(var(--lu)*15)}
+.lbempty{font-size:calc(var(--lu)*16)}
+.lbcell .w{font-size:calc(var(--lu)*14)}
+.lbcell .n{font-size:calc(var(--lu)*15)}
+.lbcell .stamp{width:calc(var(--lu)*38);height:calc(var(--lu)*38);font-size:calc(var(--lu)*13.5)}
+.lbcell .blank{width:calc(var(--lu)*38);height:calc(var(--lu)*38)}
+.lbstreak .lb{font-size:calc(var(--lu)*15)}
+.lbstreak .vv span{font-size:calc(var(--lu)*15)}
+.lbstreak .vv.none b{font-size:calc(var(--lu)*16)}
+.lbrow .no{font-size:calc(var(--lu)*15)}
+.lbrow .dot{font-size:calc(var(--lu)*13.5)}
+.lbrow .ct{font-size:calc(var(--lu)*16)}
+.lbrow .act{font-size:calc(var(--lu)*16)}
+.lbrow .tx .md{font-size:calc(var(--lu)*15)}
+.lbrow .tx b{font-size:calc(var(--lu)*17)}
+.lbrow .tx small{font-size:calc(var(--lu)*16)}
+.lbdone{font-size:calc(var(--lu)*16)}
+.lbnote{font-size:calc(var(--lu)*14.5)}
+.lvtag{font-size:calc(var(--lu)*14)}
+.lbintro p{font-size:calc(var(--lu)*17)}
+.lbstat .lb{font-size:calc(var(--lu)*15)}
+.lbstat b small{font-size:calc(var(--lu)*14)}
+.steps li{font-size:calc(var(--lu)*17)}
+.recname label{font-size:calc(var(--lu)*16)}
+
 /* ===== 이름(로그인) — 기록을 이어가기 위한 것뿐 ===== */
 .lbwho{display:flex;align-items:center;gap:calc(var(--lu)*12);width:100%;text-align:left;color:#fff;
   margin-top:calc(var(--lu)*10);background:rgba(255,255,255,.13);border:1.5px solid rgba(255,255,255,.42);
@@ -1437,7 +1481,15 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
   min-height:calc(var(--lu)*58)}
 .recwho .lb{font-size:calc(var(--lu)*14);font-weight:800;color:#3E4652}
 .recwho b{font-size:calc(var(--lu)*19);font-weight:800}
-.recwho .ok{margin-left:auto;font-size:calc(var(--lu)*13.5);font-weight:700;color:var(--ok2)}
+.recwho .ok{margin-left:auto;font-size:calc(var(--lu)*15);font-weight:700;color:var(--ok2)}
+.lbwho .tx b{font-size:calc(var(--lu)*17)}
+.lbwho .tx small{font-size:calc(var(--lu)*15)}
+.lbwho .ch{font-size:calc(var(--lu)*16)}
+.urow .tx b{font-size:calc(var(--lu)*18)}
+.ufield label{font-size:calc(var(--lu)*16)}
+.unote{font-size:calc(var(--lu)*15.5)}
+.uask{font-size:calc(var(--lu)*17)}
+.recwho .lb{font-size:calc(var(--lu)*15.5)}
 </style>
 
 <div class="app">
