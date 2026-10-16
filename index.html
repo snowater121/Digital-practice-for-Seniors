@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="디지털 연습소">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icons/icon-192.png">
+<link rel="stylesheet" href="./vendor/leaflet/leaflet.css">
 <title>디지털 연습소</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Do+Hyeon&family=Gothic+A1:wght@400;500;700;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
 <style>body{margin:0}</style>
@@ -1522,7 +1523,8 @@ html:not([data-mode="lobby"]) .device{border-width:3px;border-radius:0;box-shado
 .map-intro{padding:20px 16px;font-size:17px;line-height:1.6}
 .map-intro h2{font-size:25px;margin:0 0 8px}
 .map-intro p{margin:0 0 16px}
-.map-frame{width:100%;height:300px;border:1px solid #CBD2DA;border-radius:10px;background:#EDEFF2}
+.map-frame{width:100%;height:340px;border:1px solid #CBD2DA;border-radius:10px;background:#EDEFF2;z-index:0}
+.map-frame .leaflet-control-attribution{font-size:11px}
 .map-list{padding:0 16px 24px}
 .map-list h3{font-size:19px;margin:16px 0 8px}
 .map-row{display:block;padding:14px 0;border-top:1px solid #D4D9E0;color:#1A3D7C;
@@ -1590,6 +1592,7 @@ html:not([data-mode="lobby"]) .device{border-width:3px;border-radius:0;box-shado
 </div>
 </div>
 
+<script src="./vendor/leaflet/leaflet.js"></script>
 <script>
 (function(){
 "use strict";
@@ -2188,6 +2191,7 @@ function paintMission(){
 }
 function closeMission(){ S.missionOpen=false; paintMission(); el.tbar.hidden=!timerVisible(); }
 function render(){
+  if(mapInstance){ mapInstance.remove(); mapInstance=null; }
   document.documentElement.setAttribute("data-mode",S.mode);
   el.timer.setAttribute("aria-pressed",String(S.timerOn));
   el.timer.querySelector("small").textContent=S.timerOn?"켜짐":"꺼짐";
@@ -2208,7 +2212,7 @@ function render(){
       : "로비에서 오늘 할 연습을 고르세요. 아래 ‘가게 고르기’로 바로 열 수도 있습니다.";
     var tg0=document.querySelector(".mission .tag"); tg0.textContent="안내"; tg0.className="tag";
     el.swap.hidden=true; paintDaily(); if(S.lv==="home") lobbyScrollHint(); else el.screen.onscroll=null;
-    paintNowStore(); paintControls(); paintMission(); return;
+    paintNowStore(); paintControls(); paintMission(); if(S.lv==="map") mountMap(); return;
   }
   el.swap.hidden=false; el.screen.onscroll=null;
   if(S.mode==="table"){ if(!S.tb) S.tb=freshTable(); h=vTable(); }
@@ -3122,21 +3126,30 @@ function nextTodo(){
   }
   return null;
 }
-/* 지도는 위치 허용을 누른 뒤에만 좌표를 씁니다. 좌표와 검색 결과는 저장하지 않습니다. */
-function mapFrame(lat,lon){
-  var d=.012, bbox=[lon-d,lat-d,lon+d,lat+d].join(",");
-  return 'https://www.openstreetmap.org/export/embed.html?bbox='+encodeURIComponent(bbox)
-    +'&layer=mapnik&marker='+encodeURIComponent(lat+','+lon);
+/* 기본 지도는 GPS 없이 표시합니다. 위치 좌표와 검색 결과는 저장하지 않습니다. */
+var mapInstance=null;
+function mountMap(){
+  var node=document.getElementById("mapCanvas");
+  if(!node) return;
+  if(!window.L){ node.textContent="지도 파일을 불러오지 못했습니다. 페이지를 새로고침해 주세요."; return; }
+  var m=S.map, hasLocation=m.lat!=null && m.lon!=null;
+  mapInstance=L.map(node,{scrollWheelZoom:false}).setView(hasLocation?[m.lat,m.lon]:[36.35,127.8],hasLocation?16:7);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    maxZoom:19, attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap 기여자</a>'
+  }).addTo(mapInstance);
+  if(hasLocation) L.circleMarker([m.lat,m.lon],{radius:10,color:'#124B9B',weight:3,fillColor:'#fff',fillOpacity:1})
+    .addTo(mapInstance).bindPopup('내 위치');
 }
 function vMap(){
   var m=S.map, h='<div class="lobby">'+lbTop("주변 가게 지도")
     +'<div class="map-intro"><h2>주변 가게 찾기</h2>'
-    +'<p>위치를 허용하면 근처 카페·음식점을 지도와 목록으로 보여 드립니다. 위치는 지도 서비스에 보내어 검색합니다.</p>'
-    +'<button class="bigact" data-l="maploc">'+(m.status==="loading"?'찾는 중…':'내 주변 찾기')+'</button>';
+    +'<p>지도를 바로 살펴볼 수 있습니다. 내 주변 찾기를 누르면 현재 위치로 이동하고 근처 카페·음식점 목록을 보여 드립니다.</p>'
+    +'<button class="bigact" data-l="maploc"'+(m.status==="loading"?' disabled':'')+'>'+(m.status==="loading"?'찾는 중…':'내 주변 찾기')+'</button>';
   if(m.error) h+='<p class="map-error" role="alert">'+esc(m.error)+'</p>';
-  h+='<p class="map-note">여기 나오는 곳은 지도에 등록된 일반 가게입니다. 연습 참여 가게인지 확인되지 않았으니 방문 전 가게에 문의해 주세요. 위치와 검색 결과는 저장하지 않습니다.</p>';
+  h+='<p class="map-note">'+(m.lat!=null?'현재 위치 주변 지도입니다.':'기본 지도는 대한민국 중심입니다. 위치 권한 없이 둘러볼 수 있습니다.')+'</p>'
+    +'<div id="mapCanvas" class="map-frame" role="region" aria-label="주변 지도"></div>'
+    +'<p class="map-note">여기 나오는 곳은 지도에 등록된 일반 가게입니다. 연습 참여 가게인지 확인되지 않았으니 방문 전 가게에 문의해 주세요. 내 주변 찾기를 누르면 위치가 지도와 가게 검색 서비스에 전달되며, 위치와 검색 결과는 저장하지 않습니다.</p>';
   if(m.lat!=null && m.lon!=null){
-    h+='<iframe class="map-frame" title="현재 위치 주변 지도" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="'+mapFrame(m.lat,m.lon)+'"></iframe>';
     h+='</div><div class="map-list"><h3>주변 가게</h3>';
     if(m.status==="loading") h+='<p class="map-note">가게 목록을 찾고 있습니다.</p>';
     else if(!m.items.length) h+='<p class="map-note">지도 정보가 부족하거나 검색이 일시적으로 안 됩니다. 지도를 눌러 주변을 살펴보세요.</p>';
