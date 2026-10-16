@@ -1,0 +1,15 @@
+{
+  "name": "디지털 연습소",
+  "short_name": "디지털 연습소",
+  "description": "키오스크·은행·기차 예매를 안전하게 연습하세요.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#EDEFF2",
+  "theme_color": "#1A3D7C",
+  "lang": "ko",
+  "icons": [
+    {"src":"./icons/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
+    {"src":"./icons/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
+  ]
+}

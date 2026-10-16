@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="공공도서관 디지털 교육용 연습 앱 — 키오스크·모바일 뱅킹·기차 예매·테이블 오더 연습 (연습용, 실제 결제 없음)">
+<meta name="theme-color" content="#1A3D7C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="디지털 연습소">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
 <title>디지털 연습소</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Do+Hyeon&family=Gothic+A1:wght@400;500;700;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
 <style>body{margin:0}</style>
@@ -1490,6 +1495,47 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 .unote{font-size:calc(var(--lu)*15.5)}
 .uask{font-size:calc(var(--lu)*17)}
 .recwho .lb{font-size:calc(var(--lu)*15.5)}
+
+/* 연습 화면은 원래 기기 화면을 최대한 크게 표시합니다. */
+.topbar{display:none}
+.practicebar{display:none;gap:8px;align-items:stretch;padding:8px 10px;background:var(--shell-panel)}
+[data-mode="lobby"] .practicebar{display:none}
+html:not([data-mode="lobby"]) .practicebar{display:flex}
+.practice-tool{flex:1;min-width:0;min-height:48px;padding:8px 4px;border:1px solid #667789;
+  border-radius:8px;color:#fff;background:#24344B;font-size:14px;font-weight:700;line-height:1.3}
+.practice-tool small{display:block;font-size:12px;color:#fff}
+.practice-tool[aria-pressed="true"]{background:#39609F}
+html:not([data-mode="lobby"]) .stage{padding:0}
+html:not([data-mode="lobby"]) .device{border-width:3px;border-radius:0;box-shadow:none}
+.app:fullscreen{max-width:none;width:100%;height:100dvh}
+.mission-layer{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
+.mission-layer[hidden]{display:none}
+.mission-shade{position:absolute;inset:0;background:rgba(0,0,0,.7)}
+.mission-card{position:relative;z-index:1;width:min(100%,460px);max-height:90dvh;overflow:auto;
+  background:#fff;color:#1A1D23;border-radius:14px;padding:24px;box-shadow:0 12px 32px rgba(0,0,0,.3)}
+.mission-card h2{font-size:22px;margin:0 0 14px}
+.mission-card p{font-size:19px;line-height:1.65;margin:0 0 20px}
+.mission-actions{display:flex;gap:8px}
+.mission-actions button{flex:1;min-height:52px;border:2px solid #1A3D7C;border-radius:9px;
+  font-size:16px;font-weight:700;color:#1A3D7C}
+.mission-actions button:last-child{background:#1A3D7C;color:#fff}
+.map-intro{padding:20px 16px;font-size:17px;line-height:1.6}
+.map-intro h2{font-size:25px;margin:0 0 8px}
+.map-intro p{margin:0 0 16px}
+.map-frame{width:100%;height:300px;border:1px solid #CBD2DA;border-radius:10px;background:#EDEFF2}
+.map-list{padding:0 16px 24px}
+.map-list h3{font-size:19px;margin:16px 0 8px}
+.map-row{display:block;padding:14px 0;border-top:1px solid #D4D9E0;color:#1A3D7C;
+  font-size:17px;font-weight:700;text-decoration:underline}
+.map-row small{display:block;font-size:14px;font-weight:500;color:#4A5463;text-decoration:none}
+.map-note{font-size:15px;line-height:1.6;color:#4A5463}
+.map-error{color:#A3140A;font-size:16px;font-weight:700}
+.org-label{font-size:16px;font-weight:700}
+.ufield select{min-height:56px;padding:10px 12px;border:2px solid #D4D9E0;border-radius:10px;
+  color:#1A1D23;background:#fff;font:inherit;font-size:17px}
+.install-box{padding:16px;font-size:16px;line-height:1.6}
+.install-box p{margin:6px 0 0}
+.install-box button{min-height:48px;padding:8px 16px;background:#1A3D7C;color:#fff;border-radius:8px;font-size:16px}
 </style>
 
 <div class="app">
@@ -1515,6 +1561,12 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
     </div>
   </div>
 
+  <div class="practicebar" id="practicebar">
+    <button class="practice-tool" id="btnMission" aria-haspopup="dialog">오늘 미션 보기</button>
+    <button class="practice-tool" id="btnFull" aria-label="전체화면으로 보기">전체화면</button>
+    <button class="practice-tool" id="btnTimer" aria-pressed="true">시간제한 <small>켜짐</small></button>
+  </div>
+
   <div class="stage">
     <div class="device" id="device">
       <div class="timeout" id="tbar"><i id="tfill"></i></div>
@@ -1524,7 +1576,16 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 
   <div class="controls">
     <div class="ctlrow" id="ctlrow"></div>
-    <button class="ctl" id="btnTimer" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>시간<wbr>제한 <small>켜짐</small></button>
+  </div>
+<div class="mission-layer" id="missionLayer" hidden>
+  <div class="mission-shade" data-mission-close="1"></div>
+  <div class="mission-card" role="dialog" aria-modal="true" aria-labelledby="missionTitle">
+    <h2 id="missionTitle">이번 연습 미션</h2>
+    <p id="missionPopupText"></p>
+    <div class="mission-actions">
+      <button id="missionChange">다른 미션</button>
+      <button id="missionClose">연습 시작하기</button>
+    </div>
   </div>
 </div>
 </div>
@@ -1938,9 +1999,14 @@ var S = {
   mission:0, orderNo:null, inserting:false, timedout:false, optErr:"", sub:"단품",
   bk:freshBank(), tr:null, tb:null, big:false, picker:false,
   cls:null, lv:"home", name:"", recRange:"day", helpTab:null,
-  ufnm:"", ufpin:"", uq:null, uqpin:"", uerr:"", umove:null
+  ufnm:"", ufpin:"", uorg:"", uq:null, uqpin:"", uerr:"", umove:null,
+  missionOpen:false, map:{status:"idle",items:[],lat:null,lon:null,error:""}
 };
-var HINT=null, tick=null, justCleared=false;
+var HINT=null, tick=null, justCleared=false, installPrompt=null;
+window.addEventListener("beforeinstallprompt",function(e){
+  e.preventDefault(); installPrompt=e;
+  if(S.mode==="lobby"&&S.lv==="home") render();
+});
 
 /* ========== 매일 연습 기록 ========== */
 var DKEY="kiosk-daily-v1", PKEY="kiosk-pref-v1";
@@ -1964,6 +2030,7 @@ function saveUsers(){ try{ localStorage.setItem(UKEY,JSON.stringify(USERS)); }ca
 function findUser(id){ var i; for(i=0;i<USERS.list.length;i++){ if(USERS.list[i].id===id) return USERS.list[i]; } return null; }
 function curUser(){ return findUser(USERS.cur); }
 function userName(){ var u=curUser(); return u?u.nm:""; }
+function userOrg(){ var u=curUser(); return u && u.org ? u.org : ""; }
 function pkey(b){ return USERS.cur ? b+":"+USERS.cur : b; }
 /* 그 사람 몫에 쌓인 기록이 있는지 (id가 빈 값이면 손님 몫) */
 function slotHas(id){
@@ -1991,9 +2058,9 @@ function useUser(id){
   if(el.timer) el.timer.setAttribute("aria-pressed",String(S.timerOn));
   S.lv = S.cls ? "home" : "class";
 }
-function newUser(nm,pin){
+function newUser(nm,pin,org){
   var id="u"+Date.now().toString(36)+Math.floor(Math.random()*1296).toString(36);
-  USERS.list.push({id:id,nm:nm,pin:pin||""}); saveUsers();
+  USERS.list.push({id:id,nm:nm,pin:pin||"",org:org||""}); saveUsers();
   return id;
 }
 function todayStr(){var d=new Date();return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
@@ -2088,7 +2155,7 @@ function curMission(){return MISSIONS[S.mode][S.mission];}
 
 /* ========== 타이머 ========== */
 function timerVisible(){
-  return S.timerOn && S.mode!=="bank" && S.mode!=="train" && S.mode!=="table" && S.screen!=="attract" && S.screen!=="done";
+  return !S.missionOpen && S.timerOn && S.mode!=="bank" && S.mode!=="train" && S.mode!=="table" && S.screen!=="attract" && S.screen!=="done";
 }
 function resetTimer(){ S.left=60; S.timedout=false; el.tbar.hidden=!timerVisible(); paintTimer(); }
 function paintTimer(){ el.tfill.style.width=(S.left/60*100)+"%"; }
@@ -2112,8 +2179,18 @@ function startTick(){
 }
 
 /* ========== 렌더 ========== */
+function paintMission(){
+  var layer=document.getElementById("missionLayer");
+  var show=S.mode!=="lobby" && S.missionOpen;
+  layer.hidden=!show;
+  if(show){ document.getElementById("missionPopupText").innerHTML=curMission().t;
+    document.getElementById("missionClose").focus(); }
+}
+function closeMission(){ S.missionOpen=false; paintMission(); el.tbar.hidden=!timerVisible(); }
 function render(){
   document.documentElement.setAttribute("data-mode",S.mode);
+  el.timer.setAttribute("aria-pressed",String(S.timerOn));
+  el.timer.querySelector("small").textContent=S.timerOn?"켜짐":"꺼짐";
   el.device.classList.toggle("tablet",S.mode==="table");
   el.device.classList.toggle("bigtext",!!S.big);
   HINT=null;
@@ -2122,7 +2199,7 @@ function render(){
     document.documentElement.setAttribute("data-big",S.big?"1":"0");
     if(!S.cls && S.lv!=="class") S.lv="class";
     el.screen.innerHTML = S.lv==="class"?vClass() : S.lv==="record"?vRecord() : S.lv==="help"?vHelp()
-      : S.lv==="user"?vUser() : vLobby();
+      : S.lv==="user"?vUser() : S.lv==="map"?vMap() : vLobby();
     el.tbar.hidden=true;
     el.mission.innerHTML = S.lv==="class"?"반을 고르면 그 반에 맞는 연습을 매일 세 가지씩 골라 드립니다."
       : S.lv==="record"?"오늘 한 연습을 노션에 올릴 글로 만들어 드립니다."
@@ -2131,7 +2208,7 @@ function render(){
       : "로비에서 오늘 할 연습을 고르세요. 아래 ‘가게 고르기’로 바로 열 수도 있습니다.";
     var tg0=document.querySelector(".mission .tag"); tg0.textContent="안내"; tg0.className="tag";
     el.swap.hidden=true; paintDaily(); if(S.lv==="home") lobbyScrollHint(); else el.screen.onscroll=null;
-    paintNowStore(); paintControls(); return;
+    paintNowStore(); paintControls(); paintMission(); return;
   }
   el.swap.hidden=false; el.screen.onscroll=null;
   if(S.mode==="table"){ if(!S.tb) S.tb=freshTable(); h=vTable(); }
@@ -2157,7 +2234,7 @@ function render(){
   var tg=document.querySelector(".mission .tag"), lv=lvOf(S.mode,S.mission);
   tg.textContent=lv; tg.className="tag"+(lv==="심화"?" adv":"");
 
-  paintNowStore(); paintControls();
+  paintNowStore(); paintControls(); paintMission();
   if((S.hints||AUTO) && HINT && !S.timedout){
     var t=el.screen.querySelector(HINT);
     if(t) t.classList.add("hintpulse");
@@ -3045,6 +3122,55 @@ function nextTodo(){
   }
   return null;
 }
+/* 지도는 위치 허용을 누른 뒤에만 좌표를 씁니다. 좌표와 검색 결과는 저장하지 않습니다. */
+function mapFrame(lat,lon){
+  var d=.012, bbox=[lon-d,lat-d,lon+d,lat+d].join(",");
+  return 'https://www.openstreetmap.org/export/embed.html?bbox='+encodeURIComponent(bbox)
+    +'&layer=mapnik&marker='+encodeURIComponent(lat+','+lon);
+}
+function vMap(){
+  var m=S.map, h='<div class="lobby">'+lbTop("주변 가게 지도")
+    +'<div class="map-intro"><h2>주변 가게 찾기</h2>'
+    +'<p>위치를 허용하면 근처 카페·음식점을 지도와 목록으로 보여 드립니다. 위치는 지도 서비스에 보내어 검색합니다.</p>'
+    +'<button class="bigact" data-l="maploc">'+(m.status==="loading"?'찾는 중…':'내 주변 찾기')+'</button>';
+  if(m.error) h+='<p class="map-error" role="alert">'+esc(m.error)+'</p>';
+  h+='<p class="map-note">여기 나오는 곳은 지도에 등록된 일반 가게입니다. 연습 참여 가게인지 확인되지 않았으니 방문 전 가게에 문의해 주세요. 위치와 검색 결과는 저장하지 않습니다.</p>';
+  if(m.lat!=null && m.lon!=null){
+    h+='<iframe class="map-frame" title="현재 위치 주변 지도" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="'+mapFrame(m.lat,m.lon)+'"></iframe>';
+    h+='</div><div class="map-list"><h3>주변 가게</h3>';
+    if(m.status==="loading") h+='<p class="map-note">가게 목록을 찾고 있습니다.</p>';
+    else if(!m.items.length) h+='<p class="map-note">지도 정보가 부족하거나 검색이 일시적으로 안 됩니다. 지도를 눌러 주변을 살펴보세요.</p>';
+    m.items.forEach(function(x){
+      var link='https://www.openstreetmap.org/'+x.type+'/'+x.id;
+      h+='<a class="map-row" href="'+link+'" target="_blank" rel="noopener noreferrer">'
+        +esc(x.name)+'<small>지도에서 보기 · 실습 참여 여부 미확인</small></a>';
+    });
+    h+='</div>';
+  }else h+='</div>';
+  h+='<p class="lbnote"><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap 기여자</a></p></div>';
+  return h;
+}
+function findNearby(){
+  if(!navigator.geolocation){ S.map.error="이 기기에서는 위치 기능을 사용할 수 없습니다."; render(); return; }
+  S.map.status="loading"; S.map.error=""; render();
+  navigator.geolocation.getCurrentPosition(function(pos){
+    var lat=+pos.coords.latitude.toFixed(5), lon=+pos.coords.longitude.toFixed(5);
+    S.map.lat=lat; S.map.lon=lon; render();
+    var q='[out:json][timeout:20];nwr["amenity"~"^(cafe|fast_food|restaurant)$"](around:1000,'+lat+','+lon+');out center 50;';
+    fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:'data='+encodeURIComponent(q),
+      headers:{'Content-Type':'application/x-www-form-urlencoded'}})
+      .then(function(r){ if(!r.ok) throw new Error('map'); return r.json(); })
+      .then(function(data){
+        S.map.items=(data.elements||[]).filter(function(x){return x.tags && x.tags.name;}).slice(0,30)
+          .map(function(x){return {type:x.type,id:x.id,name:x.tags['name:ko']||x.tags.name};});
+        S.map.status="ready"; if(S.mode==="lobby"&&S.lv==="map") render();
+      }).catch(function(){S.map.status="error";S.map.error="가게 목록을 가져오지 못했습니다. 잠시 후 다시 눌러 주세요.";
+        if(S.mode==="lobby"&&S.lv==="map") render();});
+  },function(err){ S.map.status="error";
+    S.map.error=err.code===1?"위치 권한이 꺼져 있습니다. 브라우저 설정에서 허용해 주세요.":"현재 위치를 확인하지 못했습니다. 다시 눌러 주세요.";
+    if(S.mode==="lobby"&&S.lv==="map") render();
+  },{enableHighAccuracy:false,timeout:10000,maximumAge:300000});
+}
 function vLobby(){
   var W=["일","월","화","수","목","금","토"];
   var now=new Date(), i, days=[];
@@ -3094,7 +3220,7 @@ function vLobby(){
 
   return '<div class="lobby">'
     +'<div class="lbhead">'
-      +'<div class="row"><span class="tagx">디지털 연습소</span>'
+      +'<div class="row"><span class="tagx">'+(userOrg()?esc(userOrg())+' · ':'')+'디지털 연습소</span>'
         +'<button class="lbbigbtn" data-l="big" aria-pressed="'+(S.big?"true":"false")+'">글씨 크게</button></div>'
       +'<div class="dtrow"><div class="dt">'+(now.getMonth()+1)+'월 '+now.getDate()+'일 '+W[now.getDay()]+'요일</div>'
         +'<button class="lbcls" data-l="lv" data-v="class">'+(S.cls||"기초반")+' <small>바꾸기</small></button></div>'
@@ -3140,6 +3266,10 @@ function vLobby(){
     +'<div class="lbsection">'
       +'<div class="lbsec"><h2>가게 골라서 연습</h2><span>'+doneAll+' / '+totalAll+'</span></div>'
       +modes
+    +'</div>'
+    +'<div class="lbsection install-box"><h2>앱처럼 쓰기</h2>'
+      +'<p>휴대폰 브라우저 메뉴에서 <b>홈 화면에 추가</b>를 누르면 앱 아이콘이 생깁니다.</p>'
+      +'<button data-l="install" id="installBtn"'+(installPrompt?'':' hidden')+'>이 휴대폰에 추가하기</button>'
     +'</div>'
     +'<p class="lbnote">여기 나오는 가게·은행·기차는 연습을 위해 지어낸 것입니다. 실제로 주문되거나 돈이 나가지 않습니다.</p>'
     +'<span class="scrollhint" id="scrollhint">아래에 더 있습니다'+downSVG()+'</span>'
@@ -4346,6 +4476,7 @@ function softReset(){
 }
 function setMode(m){
   S.mode=m; if(m!=="lobby") S.mission=0; else S.lv=S.cls?"home":"class";
+  S.missionOpen=m!=="lobby";
   [].forEach.call(el.ms.querySelectorAll("button"),function(x){
     x.setAttribute("aria-pressed", String(x.getAttribute("data-m")===m));
   });
@@ -4397,7 +4528,27 @@ el.timer.addEventListener("click", function(){
   S.timerOn=!S.timerOn;
   el.timer.setAttribute("aria-pressed",String(S.timerOn));
   el.timer.querySelector("small").textContent=S.timerOn?"켜짐":"꺼짐";
-  resetTimer(); render();
+  save(); resetTimer(); render();
+});
+document.getElementById("btnMission").addEventListener("click",function(){S.missionOpen=true;paintMission();el.tbar.hidden=true;});
+document.getElementById("missionClose").addEventListener("click",closeMission);
+document.getElementById("missionChange").addEventListener("click",function(){
+  S.mission=(S.mission+1)%MISSIONS[S.mode].length; softReset(); render();
+});
+document.getElementById("missionLayer").addEventListener("click",function(e){
+  if(e.target.hasAttribute("data-mission-close")) closeMission();
+});
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&S.missionOpen) closeMission();});
+var fullBtn=document.getElementById("btnFull");
+fullBtn.addEventListener("click",function(){
+  if(document.fullscreenElement){ document.exitFullscreen(); return; }
+  var app=document.querySelector(".app");
+  if(app.requestFullscreen){ app.requestFullscreen().catch(function(){toast("이 브라우저에서는 전체화면으로 바꿀 수 없습니다.");}); }
+  else toast("이 브라우저에서는 전체화면을 지원하지 않습니다. 홈 화면에 추가하면 앱처럼 열 수 있습니다.");
+});
+document.addEventListener("fullscreenchange",function(){
+  fullBtn.textContent=document.fullscreenElement?"전체화면 끄기":"전체화면";
+  fullBtn.setAttribute("aria-label",fullBtn.textContent);
 });
 el.swap.addEventListener("click", function(){
   if(S.mode==="lobby") return;
@@ -4603,7 +4754,8 @@ var CICO={
   help:'<circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.2-2.4 3.8"/><path d="M12 17.2v.1"/>',
   copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>',
   left:'<path d="M15 6l-6 6 6 6"/>',
-  user:'<circle cx="12" cy="8" r="3.6"/><path d="M5 20c0-3.1 3.1-5.2 7-5.2s7 2.1 7 5.2"/>'
+  user:'<circle cx="12" cy="8" r="3.6"/><path d="M5 20c0-3.1 3.1-5.2 7-5.2s7 2.1 7 5.2"/>',
+  map:'<path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/>'
 };
 function CI(n){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(CICO[n]||'')+'</svg>'; }
 function paintControls(){
@@ -4613,8 +4765,8 @@ function paintControls(){
        '<button class="ctl'+(S.lv==="home"?" on":"")+'" data-c="lobby">'+CI("home")+'로비</button>'
       +'<button class="ctl'+(S.lv==="record"?" on":"")+'" data-c="record">'+CI("note")+'오늘 기록</button>'
       +'<button class="ctl wide" data-c="picker">'+CI("store")+'가게 고르기</button>'
-      +'<button class="ctl'+(S.lv==="help"?" on":"")+'" data-c="help">'+CI("help")+'막힐 때</button>';
-    if(el.timer) row.appendChild(el.timer);
+      +'<button class="ctl'+(S.lv==="help"?" on":"")+'" data-c="help">'+CI("help")+'막힐 때</button>'
+      +'<button class="ctl'+(S.lv==="map"?" on":"")+'" data-c="map">'+CI("map")+'지도</button>';
     return;
   }
   row.innerHTML=
@@ -4622,14 +4774,15 @@ function paintControls(){
     +'<button class="ctl" data-c="back" aria-disabled="'+(UNDO.length?"false":"true")+'">'+CI("back")+'뒤로</button>'
     +'<button class="ctl wide" data-c="picker">'+CI("store")+'가게 바꾸기</button>'
     +'<button class="ctl" data-c="hint" aria-pressed="'+(S.hints?"true":"false")+'">'+CI("bulb")+(S.hints?'힌트 켬':'힌트 끔')+'</button>'
-    +'<button class="ctl" data-c="reset">'+CI("redo")+'처음<wbr>부터</button>';
-  if(el.timer) row.appendChild(el.timer);
+    +'<button class="ctl" data-c="reset">'+CI("redo")+'처음<wbr>부터</button>'
+    +'<button class="ctl" data-c="map">'+CI("map")+'지도</button>';
 }
 document.getElementById("ctlrow").addEventListener("click",function(e){
   var b=e.target.closest("[data-c]"); if(!b) return;
   var c=b.getAttribute("data-c");
   if(c==="lobby"){ if(S.mode==="lobby"){ S.lv=S.cls?"home":"class"; render(); el.screen.scrollTop=0; } else { setMode("lobby"); render(); } }
   else if(c==="record"||c==="help"){ S.lv=c; render(); el.screen.scrollTop=0; }
+  else if(c==="map"){ if(S.mode!=="lobby") setMode("lobby"); S.lv="map"; render(); el.screen.scrollTop=0; }
   else if(c==="picker"){ S.picker=true; paintPicker(); }
   else if(c==="back"){ undo(); }
   else if(c==="hint"){ S.hints=!S.hints; AUTO=false; render(); }
@@ -4667,7 +4820,7 @@ function whoRow(){
   return '<button class="lbwho" data-l="lv" data-v="user">'
     +'<span class="ic">'+CI("user")+'</span>'
     +'<span class="tx"><b>'+(nm? esc(nm)+'님으로 기록 중' : '손님으로 연습 중')+'</b>'
-      +'<small>'+(nm? '다음에 오셔도 이 이름으로 이어집니다' : '연습과 출석은 그대로 됩니다 · 이름을 고르면 기록이 이어집니다')+'</small></span>'
+      +'<small>'+(nm? (userOrg()?esc(userOrg())+' · ':'')+'다음에 오셔도 이 이름으로 이어집니다' : '연습과 출석은 그대로 됩니다 · 이름을 고르면 기록이 이어집니다')+'</small></span>'
     +'<span class="ch">'+(nm?'바꾸기':'이름 고르기')+'</span></button>';
 }
 function vUser(){
@@ -4716,12 +4869,23 @@ function vUser(){
   }
   h+='</div>';
 
+  if(USERS.cur){
+    h+='<div class="lbsection"><div class="lbsec"><h2>소속 도서관 표시</h2><span>선택 사항</span></div>'
+      +'<p class="unote">내 화면에만 도서관 이름을 표시합니다. 실제 도서관 계정 인증이나 기록 전송은 아직 연결되지 않았습니다.</p>'
+      +'<div class="ufield"><label for="orgCurrent">도서관</label><select id="orgCurrent">'
+      +orgOptions(userOrg())+'</select></div>'
+      +'<button class="bigact" data-l="orgsave">화면에 표시하기</button></div>';
+  }
+
   h+='<div class="lbsection">'
     +'<div class="lbsec"><h2>이름 새로 적기</h2><span>처음 오셨으면 여기</span></div>'
     +'<div class="ufield"><label for="uNm">이름</label>'
       +'<input id="uNm" placeholder="예: 김영자" value="'+esc(S.ufnm||"").replace(/"/g,"&quot;")+'" autocomplete="off"></div>'
     +'<div class="ufield"><label for="uPin">숫자 네 자리 <em>안 적어도 됩니다</em></label>'
       +'<input id="uPin" type="tel" inputmode="numeric" maxlength="4" placeholder="예: 0315" value="'+esc(S.ufpin||"")+'"></div>'
+    +'<div class="ufield"><label for="uOrg">도서관 <em>안 골라도 됩니다</em></label>'
+      +'<select id="uOrg">'+orgOptions(S.uorg)+'</select></div>'
+    +'<p class="unote">코스모스 대학 도서관은 화면 동작을 보여 주는 예시입니다. 실제 기관 연동은 별도로 필요합니다.</p>'
     +'<p class="unote">여러 사람이 함께 쓰는 기기라면 숫자를 적어 두세요. 혼자 쓰는 휴대폰이면 비워 두시면 됩니다.</p>'
     +(S.uerr?'<p class="uerr">'+esc(S.uerr)+'</p>':'')
     +'<button class="bigact" data-l="unew">이 이름으로 시작하기</button>'
@@ -4736,6 +4900,10 @@ function vUser(){
   }
   h+='<p class="lbnote">이름과 기록은 이 기기 안에만 저장됩니다. 어디로도 보내지 않습니다.</p>';
   return h+'</div>';
+}
+function orgOptions(cur){
+  return '<option value="">연동 없이 사용</option>'
+    +'<option value="코스모스 대학 도서관"'+(cur==='코스모스 대학 도서관'?' selected':'')+'>코스모스 대학 도서관 (예시)</option>';
 }
 function pickUser(id){
   var u=findUser(id); if(!u) return;
@@ -4907,6 +5075,16 @@ function copyRecord(btn){
 }
 function lobbyAct(lb){
   var a=lb.getAttribute("data-l"), v=lb.getAttribute("data-v");
+  if(a==="install"){
+    if(installPrompt){ installPrompt.prompt(); installPrompt=null; render(); }
+    return;
+  }
+  if(a==="maploc"){findNearby();return;}
+  if(a==="orgsave"){
+    var selected=document.getElementById("orgCurrent"), u=curUser();
+    if(u && selected){u.org=selected.value;saveUsers();S.lv="home";render();toast("도서관 이름을 화면에 표시했습니다.");}
+    return;
+  }
   if(a==="big"){ S.big=!S.big; if(S.bk)S.bk.big=S.big; if(S.tr)S.tr.big=S.big; save(); render(); return; }
   if(a==="lv"){ S.lv=v; S.uq=null; S.umove=null; S.uerr=""; render(); el.screen.scrollTop=0; return; }
   if(a==="user"){ pickUser(v); return; }
@@ -4914,8 +5092,8 @@ function lobbyAct(lb){
     var unm=(S.ufnm||"").trim(), upn=(S.ufpin||"").replace(/[^0-9]/g,"");
     if(!unm){ S.uerr="이름을 적어 주세요."; render(); return; }
     if(upn && upn.length!==4){ S.uerr="숫자는 네 자리로 적어 주세요. 안 적어도 됩니다."; render(); return; }
-    var uid=newUser(unm.slice(0,12),upn);
-    S.ufnm=""; S.ufpin=""; S.uerr="";
+    var uid=newUser(unm.slice(0,12),upn,S.uorg);
+    S.ufnm=""; S.ufpin=""; S.uorg=""; S.uerr="";
     enterUser(uid); return;
   }
   if(a==="uok"){
@@ -4962,14 +5140,19 @@ el.screen.addEventListener("input",function(e){
   var ta=document.getElementById("recText"); if(ta) ta.value=recordText();
   var pv=document.getElementById("recPrev"); if(pv) pv.innerHTML=recordHTML(recordText());
 });
+el.screen.addEventListener("change",function(e){if(e.target.id==="uOrg") S.uorg=e.target.value;});
 
 /* 상태 보존 */
 function boot(saved){
+  if('serviceWorker' in navigator && location.protocol==='https:'){
+    navigator.serviceWorker.register('./sw.js').catch(function(){});
+  }
   loadUsers(); loadLog(); loadPref(); loadDaily();
   if(userName()) S.name=userName();
   if(!S.cls) S.lv="class";
   el.timer.setAttribute("aria-pressed",String(S.timerOn));
   if(saved&&saved.mode&&(saved.mode==="lobby"||MISSIONS[saved.mode])){ S.mode=saved.mode; S.mission=saved.mission||0; }
+  S.missionOpen=S.mode!=="lobby";
   [].forEach.call(el.ms.querySelectorAll("button"),function(x){
     x.setAttribute("aria-pressed", String(x.getAttribute("data-m")===S.mode));
   });
