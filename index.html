@@ -798,6 +798,7 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 .lbbrand{display:flex;align-items:center;gap:calc(var(--lu)*9);min-width:0}
 .lbbrand img{display:block;flex:none;width:calc(var(--lu)*48);height:calc(var(--lu)*42);object-fit:contain;
   padding:3px;border-radius:8px;background:#fff}
+.lbbrand img.wide{width:calc(var(--lu)*96)}
 .lbbrand .tagx{display:block;min-width:0;line-height:1.25;font-size:calc(var(--lu)*14);opacity:1}
 .lbbrand .tagx small{display:block;font-size:calc(var(--lu)*12);font-weight:700;color:#E1ECFF}
 .lbbigbtn{flex:none;background:rgba(255,255,255,.14);color:#fff;border:1.5px solid rgba(255,255,255,.55);
@@ -1468,7 +1469,11 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
   border-radius:calc(var(--lu)*12);background:#F5F8FD}
 .demo-card .demo-brand{display:flex;align-items:center;gap:calc(var(--lu)*12)}
 .demo-card .demo-brand img{width:calc(var(--lu)*60);height:calc(var(--lu)*52);object-fit:contain;background:#fff;border-radius:8px;padding:4px}
+.demo-card .demo-brand img.wide{width:calc(var(--lu)*120)}
 .demo-card .demo-brand b{font-size:calc(var(--lu)*18);line-height:1.35;text-wrap:balance}
+.demo-logo-preview{display:flex;align-items:center;justify-content:center;min-height:110px;margin:14px 0;
+  padding:10px;border:1px solid var(--k-line2);border-radius:9px;background:#fff}
+.demo-logo-preview img{display:block;max-width:100%;max-height:88px;object-fit:contain}
 .demo-profile{display:grid;grid-template-columns:auto 1fr;gap:8px 12px;margin-top:calc(var(--lu)*15);
   padding:calc(var(--lu)*13);border-radius:8px;background:#fff;font-size:calc(var(--lu)*15);line-height:1.5}
 .demo-profile span{color:var(--k-mut)}
@@ -2038,7 +2043,7 @@ var S = {
   bk:freshBank(), tr:null, tb:null, big:false, picker:false,
   cls:null, lv:"home", name:"", recRange:"day", helpTab:null,
   ufnm:"", ufpin:"", uorg:"", uq:null, uqpin:"", uerr:"", umove:null,
-  demoId:"demo001", demoError:"",
+  demoId:"demo001", demoProvider:"", demoError:"",
   missionOpen:false, map:{status:"idle",items:[],lat:null,lon:null,error:"",category:"all"}
 };
 var HINT=null, tick=null, justCleared=false, installPrompt=null;
@@ -2061,7 +2066,12 @@ function resetDaily(){
 var UKEY="kiosk-users-v1";
 var USERS={list:[],cur:""};
 var DEMO_SESSION_KEY="digital-practice-portal-demo-session-v1", demoSessionId="";
-var INSTITUTIONS={hansung:{name:"한성대학교",logo:"./icons/hansung-university.png"}};
+var INSTITUTIONS={
+  hansung:{name:"한성대학교",logo:"./icons/hansung-university.png"},
+  seoul:{name:"서울도서관",logo:"./icons/seoul-metropolitan-library.png",wide:true},
+  namsan:{name:"남산도서관",logo:"./icons/namsan-library.png",wide:true},
+  gyeonggi:{name:"경기도서관",logo:"./icons/gyeonggi-library.png",wide:true}
+};
 function setDemoSession(id){
   demoSessionId=id||"";
   try{ if(demoSessionId) sessionStorage.setItem(DEMO_SESSION_KEY,demoSessionId);
@@ -2118,9 +2128,8 @@ function newUser(nm,pin,org){
   return id;
 }
 function loginPortalDemo(raw,provider){
-  provider=provider||"hansung";
   var org=INSTITUTIONS[provider];
-  if(!org){ S.demoError="아직 연결할 수 없는 기관입니다."; render(); return; }
+  if(!org){ S.demoError="시연할 기관을 먼저 골라 주세요."; render(); return; }
   var demo=String(raw||"").trim().toLowerCase();
   S.demoId=demo;
   if(!/^demo[a-z0-9_-]{0,12}$/.test(demo)){
@@ -3416,7 +3425,7 @@ function findNearby(){
 }
 function lobbyBrandHTML(){
   var org=demoInstitution();
-  if(org) return '<span class="lbbrand"><img src="'+org.logo+'" alt=""><span class="tagx"><small>'
+  if(org) return '<span class="lbbrand"><img'+(org.wide?' class="wide"':'')+' src="'+org.logo+'" alt=""><span class="tagx"><small>'
     +esc(org.name)+'</small>디지털 연습소</span></span>';
   return '<span class="tagx">'+(userOrg()?esc(userOrg())+' · ':'')+'디지털 연습소</span>';
 }
@@ -5109,6 +5118,11 @@ function whoRow(){
       +'<small>'+(org?'마일리지 '+demoMileage().points+'P · 이 기기에만 저장':nm?'마일리지 없이 기록만 이어집니다':'로그인 없이 연습 가능 · 마일리지는 기관 로그인 후')+'</small></span>'
     +'<span class="ch">'+(org?'계정 보기':nm?'바꾸기':'로그인')+'</span></button>';
 }
+function demoProviderOptions(){
+  return '<option value="">기관을 선택해 주세요</option>'+Object.keys(INSTITUTIONS).map(function(key){
+    return '<option value="'+key+'"'+(S.demoProvider===key?' selected':'')+'>'+esc(INSTITUTIONS[key].name)+'</option>';
+  }).join('');
+}
 function vUser(){
   var nm=userName(), org=demoInstitution(), i;
 
@@ -5141,12 +5155,12 @@ function vUser(){
   }
 
   var h='<div class="lobby">'+lbTop("기관 로그인")
-    +'<div class="lbintro"><h2>'+(org?"한성대학교 로그인 시연 중":"기관 계정으로<br>마일리지 적립 시연")+'</h2>'
+    +'<div class="lbintro"><h2>'+(org?esc(org.name)+" 로그인 시연 중":"기관 계정으로<br>마일리지 적립 시연")+'</h2>'
       +'<p>로그인하지 않아도 연습과 출석은 이용할 수 있습니다. 기관 로그인 시연 후 완료한 연습에만 마일리지가 쌓입니다.</p></div>';
 
   if(org){
-    h+='<div class="lbsection"><div class="demo-card"><div class="demo-brand"><img src="'+org.logo+'" alt=""><b>'+esc(org.name)+'<br>디지털 연습소</b></div>'
-      +'<span class="demo-label">포털 로그인 흐름 시연</span><p class="uask">시연 사용자로 들어왔습니다. 실제 학교 계정 인증은 연결되지 않았습니다.</p>'
+    h+='<div class="lbsection"><div class="demo-card"><div class="demo-brand"><img'+(org.wide?' class="wide"':'')+' src="'+org.logo+'" alt=""><b>'+esc(org.name)+'<br>디지털 연습소</b></div>'
+      +'<span class="demo-label">포털 로그인 흐름 시연</span><p class="uask">시연 사용자로 들어왔습니다. 실제 기관 계정 인증은 연결되지 않았습니다.</p>'
       +'<div class="demo-profile"><span>기관</span><b>'+esc(org.name)+'</b><span>표시 이름</span><b>'+esc(nm)+'</b>'
       +'<span>계정 코드</span><b>'+esc(curUser().demoId||"시연용")+' (시연)</b></div>'
       +'<p class="mileage-total">'+demoMileage().points+'<small>P</small></p>'
@@ -5156,13 +5170,17 @@ function vUser(){
     return h+'</div>';
   }
 
-  h+='<div class="lbsection"><div class="demo-card"><div class="demo-brand"><img src="./icons/hansung-university.png" alt=""><b>한성대학교<br>포털 로그인 시연</b></div>'
+  var selectedOrg=INSTITUTIONS[S.demoProvider];
+  h+='<div class="lbsection"><div class="demo-card"><h3>기관 포털 로그인 시연</h3>'
     +'<span class="demo-label">발표용 예시 · 실제 인증 아님</span>'
-    +'<p class="uask">실제 포털과 연결하지 않은 시연 화면입니다. 실제 학번·비밀번호는 입력하지 마세요.</p>'
+    +'<p class="uask">기관을 고르면 해당 로고가 표시됩니다. 실제 포털과 연결하지 않은 시연 화면입니다.</p>'
+    +'<div class="ufield"><label for="demoProvider">기관 선택</label><select id="demoProvider">'+demoProviderOptions()+'</select></div>'
+    +(selectedOrg?'<div class="demo-logo-preview"><img src="'+selectedOrg.logo+'" alt="'+esc(selectedOrg.name)+' 로고"></div>':'')
     +'<div class="ufield"><label for="demoId">시연용 아이디</label>'
     +'<input id="demoId" value="'+esc(S.demoId).replace(/"/g,"&quot;")+'" placeholder="demo001" maxlength="16" autocomplete="off" spellcheck="false"></div>'
     +(S.demoError?'<p class="uerr" role="alert">'+esc(S.demoError)+'</p>':'')
-    +'<button class="bigact" data-l="demologin" data-v="hansung">한성대학교로 로그인 시연</button>'
+    +'<button class="bigact" data-l="demologin">'+(selectedOrg?esc(selectedOrg.name)+' 로그인 시연하기':'기관을 선택하고 로그인 시연하기')+'</button>'
+    +'<p class="unote">시연용 아이디는 demo로 시작합니다. 실제 학번·비밀번호는 입력하지 마세요.</p>'
     +'<p class="unote">실제 도서관 계정과 혜택 연동은 기관 협약 및 서버 구축 후 가능합니다.</p></div></div>';
 
   var localUsers=USERS.list.filter(function(u){return !u.portalDemo;});
@@ -5392,10 +5410,10 @@ function lobbyAct(lb){
   if(a==="mapcat"){setMapCategory(v);return;}
   if(a==="demologin"){
     var demoInput=document.getElementById("demoId");
-    loginPortalDemo(demoInput?demoInput.value:S.demoId,v); return;
+    loginPortalDemo(demoInput?demoInput.value:S.demoId,S.demoProvider); return;
   }
   if(a==="demologout"){
-    useUser(""); S.demoError=""; paintDaily(); render(); el.screen.scrollTop=0;
+    useUser(""); S.demoProvider=""; S.demoError=""; paintDaily(); render(); el.screen.scrollTop=0;
     toast("시연 로그아웃했습니다. 손님으로 계속 연습할 수 있습니다."); return;
   }
   if(a==="orgsave"){
@@ -5450,6 +5468,7 @@ function lobbyAct(lb){
 }
 el.screen.addEventListener("input",function(e){
   var id=e.target.id;
+  if(id==="demoId"){ S.demoId=e.target.value; return; }
   if(id==="uNm"){ S.ufnm=e.target.value.slice(0,12); return; }
   if(id==="uPin"){ e.target.value=e.target.value.replace(/[^0-9]/g,"").slice(0,4); S.ufpin=e.target.value; return; }
   if(id==="uQ"){ e.target.value=e.target.value.replace(/[^0-9]/g,"").slice(0,4); S.uqpin=e.target.value; return; }
@@ -5458,7 +5477,13 @@ el.screen.addEventListener("input",function(e){
   var ta=document.getElementById("recText"); if(ta) ta.value=recordText();
   var pv=document.getElementById("recPrev"); if(pv) pv.innerHTML=recordHTML(recordText());
 });
-el.screen.addEventListener("change",function(e){if(e.target.id==="uOrg") S.uorg=e.target.value;});
+el.screen.addEventListener("change",function(e){
+  if(e.target.id==="uOrg") S.uorg=e.target.value;
+  if(e.target.id==="demoProvider"){
+    S.demoProvider=e.target.value; S.demoError="";
+    var top=el.screen.scrollTop; render(); el.screen.scrollTop=top;
+  }
+});
 
 /* 상태 보존 */
 function boot(saved){
