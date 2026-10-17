@@ -783,8 +783,8 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 [data-mode="lobby"]{
   --brand:#1A3D7C; --brand-on:#FFFFFF;
   --stamp:#C2182B; --ok2:#2B7A52;
-  --k-bg:#EDEFF2; --k-card:#FFFFFF; --k-line:#E4E7EC; --k-line2:#D4D9E0;
-  --ink:#1A1D23; --k-fg:#1A1D23; --k-mut:#6B737F;
+  --k-bg:#F4F7FB; --k-card:#FFFFFF; --k-line:#DCE2EA; --k-line2:#D4D9E0;
+  --ink:#20242B; --k-fg:#20242B; --k-mut:#485363;
   --font-k:'Noto Sans KR',sans-serif;
   --font-disp:'Do Hyeon','Noto Sans KR',sans-serif;
   --lu:1px;
@@ -1638,14 +1638,10 @@ html:not([data-mode="lobby"]) .device{border-width:3px;border-radius:0;box-shado
 @media(max-height:690px){.taxi-map-wrap{min-height:185px}.taxi-sheet{padding-top:11px;padding-bottom:12px}.taxi-sheet h1{font-size:20px}.taxi-option{min-height:54px}}
 /* 로비: 오늘의 행동을 먼저 보여 주고 기록은 한 단계 낮춰 배치합니다. */
 .lbhead{padding-bottom:calc(var(--lu)*16)}
-.lbprimary{margin-top:calc(var(--lu)*12);padding:calc(var(--lu)*20) calc(var(--lu)*16);background:#fff}
+.lbprimary{margin-top:calc(var(--lu)*8);padding:calc(var(--lu)*14) calc(var(--lu)*16) calc(var(--lu)*12);background:#fff}
 .lbprimary .eyebrow{margin:0 0 calc(var(--lu)*7);color:var(--brand);font-size:calc(var(--lu)*15);font-weight:800}
 .lbprimary h1{margin:0;font-family:var(--font-k);font-size:calc(var(--lu)*27);font-weight:800;line-height:1.35;text-wrap:balance}
-.lbprimary .progress{margin:calc(var(--lu)*10) 0 calc(var(--lu)*18);font-size:calc(var(--lu)*17);line-height:1.5;color:#344153;font-variant-numeric:tabular-nums;text-wrap:pretty}
-.lbprimary .lbcta{min-height:calc(var(--lu)*84);background:var(--brand);color:#fff;box-shadow:none}
-.lbprimary .lbcta .pl{background:#fff;color:var(--brand)}
-.lbprimary .lbcta .tx small,.lbprimary .lbcta .cv{color:#fff}
-.lbprimary .lbcta.alldone{background:#255b40}
+.lbprimary .progress{margin:calc(var(--lu)*8) 0 0;font-size:calc(var(--lu)*17);line-height:1.5;color:#344153;font-variant-numeric:tabular-nums;text-wrap:pretty}
 .lbsummary .lbsec{margin-bottom:calc(var(--lu)*10)}
 .lbsummary p{margin:calc(var(--lu)*7) 0;font-size:calc(var(--lu)*17);line-height:1.55;text-wrap:pretty}
 .lbsummary p b{font-variant-numeric:tabular-nums}
@@ -1658,40 +1654,42 @@ html:not([data-mode="lobby"]) .device{border-width:3px;border-radius:0;box-shado
 .lobby .lbrow .act{background:#e6edf7;color:var(--brand)}
 .lobby .lbrow.done .act{background:none;color:var(--ok2);padding:0;min-height:0}
 .lbsection .lbrow:focus-visible,.lbprimary .lbcta:focus-visible,.lbsummary button:focus-visible{outline:3px solid #d38a00;outline-offset:3px}
-/* 로비 학습 목록은 한 행 전체가 버튼입니다. 실제 실습 화면의 글씨는 그대로 둡니다. */
+/* 오늘의 세 미션은 한 섹션, 같은 버튼 체계로 묶습니다. */
 .lbprimary h1{font-weight:700}
-.lbprimary .lbcta .tx b{font-weight:700}
-.lbprimary .lbcta .tx small{font-weight:500}
 .lbprimary ~ .lbsection .lbsec h2{font-size:calc(var(--lu)*21);font-weight:700;line-height:1.4;text-wrap:balance}
 .lbprimary ~ .lbsection .lbsec span{font-weight:500}
-.next-mission{margin:0 0 calc(var(--lu)*16);padding:calc(var(--lu)*14);border-left:4px solid var(--brand);background:#f2f5fa}
-.next-mission>span{display:block;font-size:calc(var(--lu)*16);font-weight:600;color:var(--brand)}
-.next-mission p{margin:calc(var(--lu)*6) 0 0;font-size:calc(var(--lu)*18);font-weight:500;line-height:1.6;text-wrap:pretty}
-.next-done{margin:0 0 calc(var(--lu)*16);font-size:calc(var(--lu)*17);font-weight:500;line-height:1.5}
-.practice-item{display:flex;flex-direction:column;align-items:flex-start;gap:calc(var(--lu)*8);width:100%;min-height:calc(var(--lu)*126);padding:calc(var(--lu)*18) 0;border-bottom:1px solid var(--k-line);background:#fff;color:var(--k-fg);text-align:left}
+.today-practice{padding-top:calc(var(--lu)*13)}
+.today-practice .lbsec{padding-bottom:calc(var(--lu)*9)}
+.practice-item{display:flex;flex-direction:column;align-items:flex-start;gap:calc(var(--lu)*5);box-sizing:border-box;width:100%;min-height:calc(var(--lu)*116);padding:calc(var(--lu)*13) 0;border-bottom:1px solid var(--k-line);background:#fff;color:var(--k-fg);text-align:left}
 .practice-item:last-child{border-bottom:0}
+.today-practice .practice-item.featured{margin-top:calc(var(--lu)*10);padding:calc(var(--lu)*13);border:1px solid var(--brand);border-radius:calc(var(--lu)*10);background:var(--brand);color:#fff}
 .practice-meta{display:flex;flex-wrap:wrap;align-items:baseline;gap:calc(var(--lu)*5);font-size:calc(var(--lu)*16);line-height:1.5}
 .practice-meta .number{margin-right:calc(var(--lu)*6);font-variant-numeric:tabular-nums;color:var(--brand);font-weight:700}
 .practice-meta .place{font-weight:600}
 .practice-meta .level{font-weight:500;color:#526071}
 .practice-meta .completed{margin-left:calc(var(--lu)*6);color:var(--ok2);font-weight:600}
-.practice-desc{display:block;width:100%;font-size:calc(var(--lu)*18);font-weight:500;line-height:1.65;text-wrap:pretty;overflow-wrap:anywhere}
+.practice-item.featured .practice-meta .number,.practice-item.featured .practice-meta .level{color:#fff}
+.practice-desc{display:block;width:100%;font-size:calc(var(--lu)*18);font-weight:500;line-height:1.5;text-wrap:pretty;overflow-wrap:anywhere}
+.practice-hint{display:block;font-size:calc(var(--lu)*16);font-weight:400;line-height:1.45;color:#485363;text-wrap:pretty}
+.practice-item.featured .practice-hint{color:#e4ecfa}
 .practice-item.done .practice-desc{color:#4f5c6a}
-.practice-action{display:inline-flex;align-items:center;gap:calc(var(--lu)*5);min-height:calc(var(--lu)*42);margin-top:calc(var(--lu)*3);color:var(--brand);font-size:calc(var(--lu)*16);font-weight:600}
+.practice-action{display:inline-flex;align-items:center;justify-content:center;gap:calc(var(--lu)*5);box-sizing:border-box;width:min(100%,calc(var(--lu)*190));min-height:calc(var(--lu)*46);margin-top:calc(var(--lu)*2);padding:calc(var(--lu)*8) calc(var(--lu)*14);border-radius:calc(var(--lu)*9);background:#E8EFF9;color:var(--brand);font-size:calc(var(--lu)*16);font-weight:600}
+.practice-item.featured .practice-action{background:#fff;color:var(--brand)}
 .practice-action svg{width:calc(var(--lu)*17);height:calc(var(--lu)*17)}
 .practice-item:focus-visible{outline:3px solid #d38a00;outline-offset:-3px}
-.summary-stats{display:grid;grid-template-columns:1fr;gap:calc(var(--lu)*10);padding-top:calc(var(--lu)*4)}
-.summary-stat{display:flex;flex-direction:column;gap:calc(var(--lu)*3);padding:calc(var(--lu)*14);background:#f3f6fa;border-radius:calc(var(--lu)*10)}
+.summary-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:calc(var(--lu)*8);padding-top:calc(var(--lu)*4)}
+.summary-stat{display:flex;flex-direction:column;gap:calc(var(--lu)*3);padding:calc(var(--lu)*12);background:#F4F7FB;border-radius:calc(var(--lu)*10)}
 .summary-stat .label{font-size:calc(var(--lu)*16);font-weight:600;color:#34465d}
 .summary-stat strong{font-size:calc(var(--lu)*26);font-weight:700;line-height:1.3;color:var(--brand);font-variant-numeric:tabular-nums}
 .summary-stat strong.pending{font-size:calc(var(--lu)*21)}
 .summary-stat strong small{font-size:calc(var(--lu)*16);font-weight:500;color:#526071}
 .summary-stat .explain{font-size:calc(var(--lu)*15);font-weight:400;line-height:1.55;color:#465466}
 .lbsummary .summary-link{font-weight:600}
-[data-mode="lobby"] .ctl{min-height:64px;font-size:clamp(14px,calc(var(--lu)*14),18px);font-weight:600;overflow-wrap:anywhere}
-[data-mode="lobby"] .ctl.wide{background:#0E1016;border-color:var(--shell-line);color:var(--shell-fg);font-size:clamp(14px,calc(var(--lu)*14),18px);font-weight:600}
-[data-mode="lobby"] .ctl.on{background:#294877;border-color:#6a9af0;color:#fff}
-@media(min-width:440px){.summary-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+[data-mode="lobby"] .controls{background:#142846;border-color:#294674}
+[data-mode="lobby"] .ctl{min-height:64px;background:#142846;border-color:#294674;color:#fff;font-size:clamp(14px,calc(var(--lu)*14),18px);font-weight:600;overflow-wrap:anywhere}
+[data-mode="lobby"] .ctl.wide{background:#142846;border-color:#294674;color:#fff;font-size:clamp(14px,calc(var(--lu)*14),18px);font-weight:600}
+[data-mode="lobby"] .ctl.on{background:#315b9d;border-color:#9cb9ed;color:#fff}
+[data-mode="lobby"][data-big="1"] .summary-stats{grid-template-columns:1fr}
 .tutorial-layer{position:fixed;inset:0;z-index:10000;pointer-events:none}
 .tutorial-shade{position:fixed;background:rgba(12,25,43,.7);pointer-events:auto}
 .tutorial-ring{position:fixed;box-sizing:border-box;border:3px solid #ffcb50;border-radius:12px;box-shadow:0 0 0 3px #fff,0 0 18px #ffcb50;pointer-events:none}
@@ -3676,6 +3674,10 @@ function vMileage(){
     +(entries||'<p class="lbempty">아직 적립 내역이 없습니다. 오늘의 연습을 하나 완료해 보세요.</p>')+'</div>'
     +'<p class="lbnote">현재 기관 포털 인증과 실제 혜택 교환은 연결되지 않았습니다. 마일리지 기록은 이 기기에만 남습니다.</p></div>';
 }
+function lobbyMissionParts(raw){
+  var txt=raw.replace(/<\/?b>/g,""), match=txt.match(/^(.*?)(?:\s*\(([^()]*)\))?$/);
+  return {main:match?match[1]:txt,hint:match&&match[2]?match[2]:""};
+}
 function vLobby(){
   var W=["일","월","화","수","목","금","토"];
   var now=new Date(), i, days=[];
@@ -3687,31 +3689,19 @@ function vLobby(){
   var n=Math.min((DAILY.cleared||[]).length,3);
   var nx=nextTodo();
   var hasStamp=(DAILY.hist||[]).length>0;
-  var nextMission=nx?MISSIONS[nx.p.mode][nx.p.mi].t.replace(/<\/?b>/g,""):"";
-
-  var cta = nx
-    ? '<button class="lbcta" data-l="go" data-m="'+nx.p.mode+'" data-i="'+nx.p.mi+'">'
-        +'<span class="pl">'+playSVG()+'</span>'
-        +'<span class="tx"><b>오늘 연습 시작하기</b>'
-        +'<small>위에 안내된 미션을 시작합니다</small></span>'
-        +'<span class="cv">'+chevSVG()+'</span></button>'
-    : '<button class="lbcta alldone" data-l="mode" data-m="cafe">'
-        +'<span class="pl">'+checkSVG()+'</span>'
-        +'<span class="tx"><b>카페 연습 더 하기</b>'
-        +'<small>오늘의 세 가지 연습은 모두 마쳤어요</small></span>'
-        +'<span class="cv">'+chevSVG()+'</span></button>';
 
   var tasks=(DAILY.plan||[]).map(function(pl,idx){
     if(!pl||!MISSIONS[pl.mode]) return '';
-    if(nx&&pl.mode===nx.p.mode&&pl.mi===nx.p.mi) return '';
     var key=pl.mode+":"+pl.mi, done=(DAILY.cleared||[]).indexOf(key)>-1;
-    var txt=MISSIONS[pl.mode][pl.mi].t.replace(/<\/?b>/g,"");
+    var featured=!!(nx&&pl.mode===nx.p.mode&&pl.mi===nx.p.mi);
+    var txt=lobbyMissionParts(MISSIONS[pl.mode][pl.mi].t);
     var lvv=lvOf(pl.mode,pl.mi);
-    return '<button class="practice-item'+(done?' done':'')+'" data-l="go" data-m="'+pl.mode+'" data-i="'+pl.mi+'">'
+    return '<button class="practice-item'+(featured?' featured':'')+(done?' done':'')+'" data-l="go" data-m="'+pl.mode+'" data-i="'+pl.mi+'">'
       +'<span class="practice-meta"><span class="number">'+String(idx+1).padStart(2,"0")+'</span>'
         +'<span class="place">'+DATA[pl.mode].store+'</span><span class="level">· '+(pl.r?'다시 해보기':lvv)+'</span>'
         +(done?'<span class="completed">완료</span>':'')+'</span>'
-      +'<span class="practice-desc">'+txt+'</span>'
+      +'<span class="practice-desc">'+txt.main+'</span>'
+      +(txt.hint?'<span class="practice-hint">'+txt.hint+'</span>':'')
       +'<span class="practice-action">'+(done?'다시 연습하기':'연습 시작하기')+chevSVG()+'</span></button>';
   }).join("");
 
@@ -3737,12 +3727,9 @@ function vLobby(){
       +'<p class="eyebrow">오늘의 학습</p>'
       +'<h1>'+(userName()?esc(userName())+'님, ':'')+'오늘도 연습해 볼까요?</h1>'
       +'<p class="progress">오늘의 연습 3개 중 '+n+'개를 완료했어요.</p>'
-      +(nx?'<div class="next-mission"><span>지금 할 연습 · '+DATA[nx.p.mode].store+'</span>'
-        +'<p>'+nextMission+'</p></div>':'<p class="next-done">오늘의 세 가지 연습을 모두 마쳤어요.</p>')
-      +cta
     +'</div>'
-    +'<div class="lbsection">'
-      +'<div class="lbsec"><h2>'+(nx?'다른 연습':'오늘의 연습 기록')+'</h2><span>'+n+' / 3 완료</span></div>'
+    +'<div class="lbsection today-practice">'
+      +'<div class="lbsec"><h2>오늘의 연습</h2><span>'+n+' / 3 완료</span></div>'
       +tasks
     +'</div>'
 
@@ -5929,7 +5916,7 @@ var TUTORIAL=[
   {title:"디지털 연습소에 오신 것을 환영합니다",body:"화면의 버튼을 직접 눌러 연습을 시작해 볼게요. 로그인하지 않아도 이용할 수 있고, 연습 중 실제 결제는 되지 않습니다."},
   {title:"난이도를 살펴보세요",body:"화면 위의 난이도 바꾸기를 눌러 보세요.",target:'[data-l="lv"][data-v="class"]',done:function(){return S.mode==="lobby"&&S.lv==="class";}},
   {title:"난이도를 선택하세요",body:"현재 선택된 난이도를 눌러 로비로 돌아가세요. 나중에 다시 바꿀 수 있습니다.",target:function(){return '[data-l="cls"][data-v="'+S.cls+'"]';},done:function(){return S.mode==="lobby"&&S.lv==="home";}},
-  {title:"오늘의 연습을 시작하세요",body:"오늘 연습 시작하기를 눌러 실제 연습 화면으로 들어가세요.",target:'.lbcta[data-l="go"],.lbcta[data-l="mode"]',done:function(){return S.mode!=="lobby";}},
+  {title:"오늘의 연습을 시작하세요",body:"오늘의 연습에서 강조된 연습 시작하기 버튼을 눌러 보세요.",target:'.today-practice .practice-item.featured,.today-practice .practice-item',done:function(){return S.mode!=="lobby";}},
   {title:"미션을 읽어 보세요",body:"위쪽의 오늘 미션 보기를 누르면 해야 할 일을 확인할 수 있습니다.",target:'#btnMission',done:function(){return S.missionOpen;}},
   {title:"미션 창을 닫아 보세요",body:"내용을 읽은 뒤 연습 시작하기를 눌러 화면으로 돌아가세요. 초보자용에서는 미션이 계속 보입니다.",target:'#missionClose',done:function(){return !S.missionOpen;}},
   {title:"로비로 돌아가세요",body:"아래 로비 버튼을 눌러 처음 화면으로 돌아가세요.",target:'#ctlrow [data-c="lobby"]',done:function(){return S.mode==="lobby"&&S.lv==="home";}},
