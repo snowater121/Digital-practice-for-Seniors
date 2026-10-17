@@ -1656,7 +1656,7 @@ html:not([data-mode="lobby"]) .device{border-width:3px;border-radius:0;box-shado
 .lbsummary .lbwho .ch{background:#fff;border:1px solid var(--brand)}
 .lobby .lbrow .dot{background:#e6edf7;color:var(--brand)}
 .lobby .lbrow .act{background:#e6edf7;color:var(--brand)}
-.lobby .lbrow.done .act{background:none;color:var(--ok2)}
+.lobby .lbrow.done .act{background:none;color:var(--ok2);padding:0;min-height:0}
 .lbsection .lbrow:focus-visible,.lbprimary .lbcta:focus-visible,.lbsummary button:focus-visible{outline:3px solid #d38a00;outline-offset:3px}
 .tutorial-layer{position:fixed;inset:0;z-index:10000;pointer-events:none}
 .tutorial-shade{position:fixed;background:rgba(12,25,43,.7);pointer-events:auto}
@@ -3670,7 +3670,7 @@ function vLobby(){
       +'<span class="no">'+(done?checkSVG():(idx+1))+'</span>'
       +'<span class="tx"><span class="md">'+DATA[pl.mode].store
         +(pl.r?'<span class="lvtag rv">다시 해보기</span>':'<span class="lvtag'+(lvv==="어려움"?" adv":"")+'">'+lvv+'</span>')+'</span><b>'+txt+'</b></span>'
-      +'<span class="act">'+(done?'다 했습니다':'시작')+'</span></button>';
+      +'<span class="act">'+(done?'완료':'시작')+'</span></button>';
   }).join("");
 
   var totalAll=0, doneAll=0;
