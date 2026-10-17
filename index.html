@@ -1353,6 +1353,13 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 .recrow .tx{flex:1;min-width:0}
 .recrow .tx b{display:block;font-size:calc(var(--lu)*15);font-weight:700;line-height:1.5}
 .recrow .tx small{display:block;font-size:calc(var(--lu)*13.5);color:#5E6672;margin-top:3px;line-height:1.5}
+.today-record{padding-top:calc(var(--lu)*12);padding-bottom:calc(var(--lu)*6)}
+.today-record .lbsec{padding-bottom:calc(var(--lu)*9)}
+.today-record .lbstat{gap:calc(var(--lu)*6);padding:calc(var(--lu)*8) 0 calc(var(--lu)*4)}
+.today-record .lbstat div{padding:calc(var(--lu)*7) calc(var(--lu)*6)}
+.today-record .lbstat b{margin-top:calc(var(--lu)*2)}
+.today-record .recrow{padding:calc(var(--lu)*9) 0}
+.today-record .lbempty{padding:calc(var(--lu)*8) 0}
 .recname{display:flex;align-items:center;gap:10px;border:2px solid var(--k-line2);border-radius:calc(var(--lu)*10);
   padding:0 calc(var(--lu)*12);margin-top:calc(var(--lu)*14);background:#fff}
 .recname label{flex:none;font-size:calc(var(--lu)*14.5);font-weight:800;color:#3E4652}
@@ -5708,12 +5715,12 @@ function vRecord(){
         +'<span class="tx"><b>'+plainMission(p[0],+p[1])+'</b>'
         +'<small>'+storeName(p[0])+' · 시도 '+e.n+'번 · 헤맴 '+e.w+'번'+(e.ok&&e.s?' · '+secTxt(e.s):'')+'</small></span></div>'; }).join("");
   return '<div class="lobby">'+lbTop("연습 기록 보내기")
-    +'<div class="lbsection">'
+    +'<div class="lbsection today-record">'
       +'<div class="lbsec"><h2>오늘 한 연습</h2><span>'+dlabel(ds)+'</span></div>'
       +'<div class="lbstat"><div><span class="lb">마친 연습</span><b>'+t.ok+'<small>개</small></b></div>'
         +'<div><span class="lb">헤맨 횟수</span><b>'+t.w+'<small>번</small></b></div>'
         +'<div><span class="lb">연속 출석</span><b>'+(DAILY.streak||0)+'<small>일</small></b></div></div>'
-      +(rows||'<p class="lbempty" style="padding-bottom:calc(var(--lu)*14)">아직 연습한 것이 없습니다. 하나만 해도 기록이 생깁니다.</p>')
+      +(rows||'<p class="lbempty">아직 연습한 것이 없습니다. 하나만 해도 기록이 생깁니다.</p>')
     +'</div>'
     +(userName()?'':'<div class="lbsection">'
       +'<div class="lbsec"><h2>기록 이어가기</h2><span>지금은 손님</span></div>'
