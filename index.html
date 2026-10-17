@@ -1358,8 +1358,9 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 .today-record .lbstat{gap:calc(var(--lu)*6);padding:calc(var(--lu)*8) 0 calc(var(--lu)*4)}
 .today-record .lbstat div{padding:calc(var(--lu)*7) calc(var(--lu)*6)}
 .today-record .lbstat b{margin-top:calc(var(--lu)*2)}
-.today-record .recrow{padding:calc(var(--lu)*9) 0}
+.today-record .recrow{gap:calc(var(--lu)*8);padding:calc(var(--lu)*9) 0}
 .today-record .lbempty{padding:calc(var(--lu)*8) 0}
+.today-practice .lbrow{gap:calc(var(--lu)*8)}
 .recname{display:flex;align-items:center;gap:10px;border:2px solid var(--k-line2);border-radius:calc(var(--lu)*10);
   padding:0 calc(var(--lu)*12);margin-top:calc(var(--lu)*14);background:#fff}
 .recname label{flex:none;font-size:calc(var(--lu)*14.5);font-weight:800;color:#3E4652}
@@ -3703,7 +3704,7 @@ function vLobby(){
       +'<p class="unote">7일 연속 출석 +100P (월 1회) · 로그인한 기관 체험 계정에 적립</p>'
     +'</div>'
 
-    +'<div class="lbsection">'
+    +'<div class="lbsection today-practice">'
       +'<div class="lbsec"><h2>오늘 할 연습</h2><span>'+n+' / 3</span></div>'
       +(n>=3?'<div class="lbdone">오늘 세 가지를 모두 마쳤습니다. 내일 또 오시면 '+((DAILY.streak||0)+1)+'일째가 됩니다.</div>':'')
       +tasks
