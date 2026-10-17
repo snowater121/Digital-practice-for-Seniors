@@ -1361,6 +1361,14 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 .today-record .recrow{gap:calc(var(--lu)*8);padding:calc(var(--lu)*9) 0}
 .today-record .lbempty{padding:calc(var(--lu)*8) 0}
 .today-practice .lbrow{gap:calc(var(--lu)*8)}
+.today-practice-fold summary{list-style:none;cursor:pointer;align-items:center;min-height:calc(var(--lu)*44);padding-bottom:calc(var(--lu)*8)}
+.today-practice-fold summary::-webkit-details-marker{display:none}
+.today-practice-fold summary span{color:var(--brand);text-align:right}
+.today-practice-fold summary strong{display:inline-block;font-weight:800;margin-left:calc(var(--lu)*6);white-space:nowrap}
+.today-practice-fold summary .fold-close{display:none}
+.today-practice-fold[open] summary .fold-open{display:none}
+.today-practice-fold[open] summary .fold-close{display:inline}
+.today-practice-fold summary:focus-visible{outline:3px solid var(--brand);outline-offset:3px}
 .recname{display:flex;align-items:center;gap:10px;border:2px solid var(--k-line2);border-radius:calc(var(--lu)*10);
   padding:0 calc(var(--lu)*12);margin-top:calc(var(--lu)*14);background:#fff}
 .recname label{flex:none;font-size:calc(var(--lu)*14.5);font-weight:800;color:#3E4652}
@@ -3705,9 +3713,11 @@ function vLobby(){
     +'</div>'
 
     +'<div class="lbsection today-practice">'
-      +'<div class="lbsec"><h2>오늘 할 연습</h2><span>'+n+' / 3</span></div>'
-      +(n>=3?'<div class="lbdone">오늘 세 가지를 모두 마쳤습니다. 내일 또 오시면 '+((DAILY.streak||0)+1)+'일째가 됩니다.</div>':'')
-      +tasks
+      +(n>=3
+        ? '<details class="today-practice-fold"><summary class="lbsec"><h2>오늘 할 연습</h2><span>3 / 3 완료 <strong class="fold-open">펼치기 ▾</strong><strong class="fold-close">접기 ▴</strong></span></summary>'
+          +'<div class="lbdone">오늘 세 가지를 모두 마쳤습니다. 내일 또 오시면 '+((DAILY.streak||0)+1)+'일째가 됩니다.</div>'
+          +tasks+'</details>'
+        : '<div class="lbsec"><h2>오늘 할 연습</h2><span>'+n+' / 3</span></div>'+tasks)
     +'</div>'
 
     +reviewSection()
