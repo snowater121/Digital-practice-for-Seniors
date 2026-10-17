@@ -1568,6 +1568,9 @@ html:not([data-mode="lobby"]) .device{border-width:3px;border-radius:0;box-shado
 .map-pin{display:flex;align-items:center;justify-content:center;width:36px;height:36px;box-sizing:border-box;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 7px #0005;color:#fff;font-size:17px;font-weight:900}
 .map-pin.restaurant{background:#A94C00}
 .map-pin.bank{background:#164F9A}
+.map-marker-info{padding:9px 12px;max-width:220px;font-size:16px;line-height:1.4;color:#20242b;overflow-wrap:anywhere}
+.map-marker-info strong{display:block;font-weight:800}
+.map-marker-info small{display:block;margin-top:2px;font-size:13px;color:#526070}
 .map-list .map-row{border-left:5px solid #A94C00;padding-left:12px}
 .map-row.bank{border-left-color:#164F9A}
 .map-kind{display:inline-block;margin-right:8px;font-size:14px;color:#82400D}
@@ -3272,8 +3275,12 @@ function clearMap(){
   mapMountToken++;
   if(!mapInstance) return;
   if(mapInstance.kind==="naver"){
+    if(mapInstance.infoWindow) mapInstance.infoWindow.close();
     if(mapInstance.marker) mapInstance.marker.setMap(null);
-    (mapInstance.places||[]).forEach(function(marker){marker.setMap(null);});
+    (mapInstance.places||[]).forEach(function(marker){
+      naver.maps.Event.clearInstanceListeners(marker);
+      marker.setMap(null);
+    });
     mapInstance.map.destroy();
   }else mapInstance.map.remove();
   mapInstance=null;
@@ -3281,11 +3288,22 @@ function clearMap(){
 function visibleMapItems(){
   return S.map.items.filter(function(x){return S.map.category==="all" || x.category===S.map.category;});
 }
+function mapMarkerInfo(x){
+  return '<div class="map-marker-info"><strong>'+esc(x.name)+'</strong><small>'
+    +(x.category==="bank"?"은행":"식당")+'</small></div>';
+}
 function syncMapMarkers(){
   if(!mapInstance) return;
   var holder=mapInstance;
+  if(holder.kind==="naver"){
+    holder.selectedPlace=null;
+    holder.infoWindow.close();
+  }
   (holder.places||[]).forEach(function(marker){
-    if(holder.kind==="naver") marker.setMap(null);
+    if(holder.kind==="naver"){
+      naver.maps.Event.clearInstanceListeners(marker);
+      marker.setMap(null);
+    }
     else holder.map.removeLayer(marker);
   });
   holder.places=[];
@@ -3299,10 +3317,27 @@ function syncMapMarkers(){
         icon:{content:'<span class="map-pin '+x.category+'">'+(x.category==="bank"?"은":"식")+'</span>',
           size:new naver.maps.Size(36,36),anchor:new naver.maps.Point(18,18)}
       });
+      var info=mapMarkerInfo(x);
+      function showInfo(){
+        holder.infoWindow.setContent(info);
+        holder.infoWindow.open(holder.map,marker);
+      }
+      naver.maps.Event.addListener(marker,"mouseover",showInfo);
+      naver.maps.Event.addListener(marker,"mouseout",function(){
+        if(holder.selectedPlace && holder.selectedPlace.marker!==marker){
+          holder.infoWindow.setContent(holder.selectedPlace.info);
+          holder.infoWindow.open(holder.map,holder.selectedPlace.marker);
+        }else if(!holder.selectedPlace) holder.infoWindow.close();
+      });
+      naver.maps.Event.addListener(marker,"click",function(){
+        holder.selectedPlace={marker:marker,info:info};
+        showInfo();
+      });
     }else{
       marker=L.circleMarker([x.lat,x.lon],{radius:9,color:x.category==="bank"?'#164F9A':'#A94C00',
         weight:3,fillOpacity:.85}).addTo(holder.map);
-      marker.bindPopup(esc(x.name));
+      marker.bindTooltip(esc(x.name),{direction:"top",offset:[0,-9]});
+      marker.bindPopup(mapMarkerInfo(x));
     }
     holder.places.push(marker);
   });
@@ -3364,7 +3399,14 @@ function mountMap(){
     });
     if(token!==mapMountToken || naverMapFailed){ map.destroy(); return; }
     var marker=located?new naver.maps.Marker({position:new naver.maps.LatLng(m.lat,m.lon),map:map,title:"내 위치"}):null;
-    mapInstance={kind:"naver",map:map,marker:marker,places:[]};
+    var infoWindow=new naver.maps.InfoWindow({content:"",maxWidth:240,disableAutoPan:true});
+    mapInstance={kind:"naver",map:map,marker:marker,places:[],infoWindow:infoWindow,selectedPlace:null};
+    naver.maps.Event.addListener(map,"click",function(){
+      if(mapInstance && mapInstance.map===map){
+        mapInstance.selectedPlace=null;
+        infoWindow.close();
+      }
+    });
     syncMapMarkers();
     var note=document.getElementById("mapMessage");
     if(note) note.textContent="네이버 지도를 표시하고 있습니다.";
