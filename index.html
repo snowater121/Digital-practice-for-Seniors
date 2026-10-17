@@ -1535,6 +1535,13 @@ html:not([data-mode="lobby"]) .practicebar{display:flex}
   border-radius:8px;color:#fff;background:#24344B;font-size:14px;font-weight:700;line-height:1.3}
 .practice-tool small{display:block;font-size:12px;color:#fff}
 .practice-tool[aria-pressed="true"]{background:#39609F}
+.mission-pin{flex:none;margin:8px 10px 0;padding:10px 12px;border:2px solid #1A3D7C;
+  border-radius:10px;background:#FFFDF3;color:#1A1D23;box-shadow:0 3px 12px #0003}
+.mission-pin[hidden]{display:none}
+.mission-pin strong{display:block;font-size:14px;color:#1A3D7C}
+.mission-pin p{max-height:18dvh;overflow-y:auto;margin:4px 0 0;font-size:17px;line-height:1.5}
+.mission-pin button{min-height:44px;margin-top:6px;padding:5px 12px;border:1px solid #1A3D7C;
+  border-radius:7px;background:#fff;color:#1A3D7C;font:inherit;font-size:14px;font-weight:700}
 html:not([data-mode="lobby"]) .stage{padding:0}
 html:not([data-mode="lobby"]) .device{border-width:3px;border-radius:0;box-shadow:none}
 .app:fullscreen{max-width:none;width:100%;height:100dvh}
@@ -1607,6 +1614,11 @@ html:not([data-mode="lobby"]) .device{border-width:3px;border-radius:0;box-shado
     <button class="practice-tool" id="btnMission" aria-haspopup="dialog">오늘 미션 보기</button>
     <button class="practice-tool" id="btnFull" aria-label="전체화면으로 보기">전체화면</button>
     <button class="practice-tool" id="btnTimer" aria-pressed="true">시간제한 <small>켜짐</small></button>
+  </div>
+
+  <div class="mission-pin" id="missionPin" role="note" hidden>
+    <strong>이번 미션</strong><p id="missionPinText"></p>
+    <button id="missionPinExpand">미션 크게 보기</button>
   </div>
 
   <div class="stage">
@@ -2038,10 +2050,10 @@ function freshBank(big){
 }
 var S = {
   mode:"lobby", screen:"attract", cat:0, serve:null, cart:[],
-  modal:null, pending:null, hints:false, timerOn:true, left:60,
+  modal:null, pending:null, hints:false, timerOn:false, left:60,
   mission:0, orderNo:null, inserting:false, timedout:false, optErr:"", sub:"단품",
   bk:freshBank(), tr:null, tb:null, big:false, picker:false,
-  cls:null, lv:"home", name:"", recRange:"day", helpTab:null,
+  cls:"초보자용", lv:"home", name:"", recRange:"day", helpTab:null,
   ufnm:"", ufpin:"", uorg:"", uq:null, uqpin:"", uerr:"", umove:null,
   demoId:"", demoProvider:"", demoError:"",
   missionOpen:false, map:{status:"idle",items:[],lat:null,lon:null,error:"",category:"all"}
@@ -2117,11 +2129,11 @@ function useUser(id){
   if(id!==demoSessionId) setDemoSession("");
   USERS.cur=id||""; saveUsers();
   LOG={days:{}}; resetDaily();
-  S.big=false; S.cls=null; S.name=""; S.timerOn=true;
+  S.big=false; S.cls="초보자용"; S.name=""; S.timerOn=false;
   loadLog(); loadPref(); loadDaily();
   if(userName()) S.name=userName();
   if(el.timer) el.timer.setAttribute("aria-pressed",String(S.timerOn));
-  S.lv = S.cls ? "home" : "class";
+  S.lv="home";
 }
 function newUser(nm,pin,org){
   var id="u"+Date.now().toString(36)+Math.floor(Math.random()*1296).toString(36);
@@ -2141,14 +2153,13 @@ function loginPortalDemo(raw,password,provider){
     S.demoError="아이디 또는 비밀번호가 맞지 않습니다. 체험용 아이디 demo001, 비밀번호 demo1234를 입력해 주세요.";
     render(); return;
   }
-  var id="portal-demo:"+provider+":"+demo, oldClass=S.cls;
+  var id="portal-demo:"+provider+":"+demo;
   if(!findUser(id)){
     USERS.list.push({id:id,nm:"체험 사용자",org:org.name,provider:provider,demoId:demo,portalDemo:true});
     saveUsers();
   }
   setDemoSession(id);
   useUser(id);
-  if(!S.cls && oldClass){ S.cls=oldClass; save(); loadDaily(); S.lv="home"; }
   S.demoError="";
   paintDaily(); render(); el.screen.scrollTop=0;
   toast(org.name+" 체험 계정으로 들어왔습니다. 미션을 마치면 마일리지가 쌓입니다.",true);
@@ -2159,19 +2170,35 @@ function demoMileage(){
   try{
     var data=JSON.parse(localStorage.getItem(demoMileageKey())||"null");
     if(data && Array.isArray(data.entries)){
-      var entries=data.entries.filter(function(x){return x && x.date && x.mode && Number.isInteger(x.mi) && x.points===10;});
-      return {entries:entries,points:entries.length*10};
+      var entries=data.entries.filter(function(x){
+        return x && typeof x.date==="string" && (
+          (x.kind==="daily" && x.points===50) ||
+          (x.kind==="streak" && x.points===100) ||
+          (!x.kind && x.mode && Number.isInteger(x.mi) && x.points===10));
+      });
+      return {entries:entries,points:entries.reduce(function(sum,x){return sum+x.points;},0)};
     }
   }catch(e){}
   return {entries:[],points:0};
 }
-function earnDemoMileage(mode,mi){
+function rewardMonth(date){ return date.split("-").slice(0,2).join("-"); }
+function monthlyStreakClaimed(){
+  var month=rewardMonth(todayStr());
+  return demoMileage().entries.some(function(x){return x.kind==="streak" && rewardMonth(x.date)===month;});
+}
+function earnDemoMileage(streak,mode,mi){
   if(!demoInstitution()) return 0;
   var date=todayStr(), data=demoMileage();
-  if(data.entries.some(function(x){return x.date===date && x.mode===mode && x.mi===mi;})) return 0;
-  data.entries.unshift({date:date,mode:mode,mi:mi,points:10});
+  var earned=0;
+  if(!data.entries.some(function(x){return x.kind==="daily" && x.date===date;})){
+    data.entries.unshift({kind:"daily",date:date,mode:mode,mi:mi,points:50}); earned+=50;
+  }
+  if(streak>=7 && !data.entries.some(function(x){return x.kind==="streak" && rewardMonth(x.date)===rewardMonth(date);})){
+    data.entries.unshift({kind:"streak",date:date,points:100}); earned+=100;
+  }
+  if(!earned) return 0;
   try{ localStorage.setItem(demoMileageKey(),JSON.stringify({entries:data.entries})); }catch(e){return 0;}
-  return 10;
+  return earned;
 }
 function todayStr(){var d=new Date();return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
 function yesterdayStr(){var d=new Date();d.setDate(d.getDate()-1);return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
@@ -2184,14 +2211,14 @@ function loadDaily(){
   if(DAILY.date!==todayStr()){
     DAILY.date=todayStr(); DAILY.plan=makePlan(DAILY.date); DAILY.cleared=[]; DAILY.dayDone=false; DAILY.attended=false;
   }
-  if(!DAILY.plan || DAILY.plan.length!==3 || DAILY.pcls!==(S.cls||"기초반")){ DAILY.plan=makePlan(DAILY.date); DAILY.pcls=S.cls||"기초반"; }
+  if(!DAILY.plan || DAILY.plan.length!==3 || DAILY.pcls!==S.cls){ DAILY.plan=makePlan(DAILY.date); DAILY.pcls=S.cls; }
   saveDaily();
 }
 function saveDaily(){ try{ localStorage.setItem(pkey(DKEY),JSON.stringify(DAILY)); }catch(e){} }
 function save(){ try{ localStorage.setItem(pkey(PKEY),JSON.stringify({big:S.big,cls:S.cls,name:S.name,tm:S.timerOn})); }catch(e){} }
 function loadPref(){ try{ var p=JSON.parse(localStorage.getItem(pkey(PKEY))||"{}"); S.big=!!p.big;
-  if(p.cls==="기초반"||p.cls==="심화반") S.cls=p.cls; S.name=p.name||"";
-  S.timerOn = (typeof p.tm==="boolean") ? p.tm : (S.cls==="심화반"); }catch(e){} }
+  S.cls=p.cls==="어려움"||p.cls==="심화반"?"어려움":"초보자용"; S.name=p.name||"";
+  S.timerOn = (typeof p.tm==="boolean") ? p.tm : (S.cls==="어려움"); }catch(e){} }
 function mkey(mode,mi){ return mode+":"+mi; }
 function recordClear(mode,mi){
   logClear(mode,mi);
@@ -2199,7 +2226,7 @@ function recordClear(mode,mi){
   var k=mkey(mode,mi);
   justCleared = DAILY.cleared.indexOf(k)<0;
   if(justCleared) DAILY.cleared.push(k);
-  var earned=justCleared?earnDemoMileage(mode,mi):0;
+  var earned=0;
   if(!DAILY.allClear) DAILY.allClear=[];
   if(DAILY.allClear.indexOf(k)<0) DAILY.allClear.push(k);
   if(!DAILY.attended){            /* 하루 한 가지만 해도 출석 */
@@ -2212,10 +2239,11 @@ function recordClear(mode,mi){
     if(DAILY.hist.length>80) DAILY.hist=DAILY.hist.slice(-80);
   }
   if(DAILY.cleared.length>=3) DAILY.dayDone=true;
+  if(justCleared) earned=earnDemoMileage(DAILY.streak,mode,mi);
   saveDaily(); paintDaily();
   if(S.mode==="bank"||S.mode==="train"||S.mode==="table"){
-    toast("미션 성공!"+(LASTRES?" 걸린 시간 "+secTxt(LASTRES.s)+" · 헤맨 횟수 "+LASTRES.w+"번":"")+(justCleared?" · 오늘 "+Math.min(DAILY.cleared.length,3)+"/3":"")+(earned?" · 마일리지 +10P":""),true);
-  }else if(earned) toast("미션 성공! 마일리지 +10P",true);
+    toast("미션 성공!"+(LASTRES?" 걸린 시간 "+secTxt(LASTRES.s)+" · 헤맨 횟수 "+LASTRES.w+"번":"")+(justCleared?" · 오늘 "+Math.min(DAILY.cleared.length,3)+"/3":"")+(earned?" · 마일리지 +"+earned+"P":""),true);
+  }else if(earned) toast("미션 성공! 마일리지 +"+earned+"P",true);
 }
 /* 추천 미션: 오늘의 세 가지 중 아직 안 한 것 → 없으면 아무 미션이나 */
 function nextDailyTask(){
@@ -2294,6 +2322,9 @@ function paintMission(){
   var layer=document.getElementById("missionLayer");
   var show=S.mode!=="lobby" && S.missionOpen;
   layer.hidden=!show;
+  var pin=document.getElementById("missionPin");
+  pin.hidden=S.mode==="lobby" || S.cls!=="초보자용";
+  if(!pin.hidden) document.getElementById("missionPinText").innerHTML=curMission().t;
   if(show){ document.getElementById("missionPopupText").innerHTML=curMission().t;
     document.getElementById("missionClose").focus(); }
 }
@@ -2309,7 +2340,6 @@ function render(){
   var h="";
   if(S.mode==="lobby"){
     document.documentElement.setAttribute("data-big",S.big?"1":"0");
-    if(!S.cls && S.lv!=="class") S.lv="class";
     el.screen.innerHTML = S.lv==="class"?vClass() : S.lv==="record"?vRecord() : S.lv==="help"?vHelp()
       : S.lv==="user"?vUser() : S.lv==="mileage"?vMileage() : S.lv==="map"?vMap() : vLobby();
     el.tbar.hidden=true;
@@ -3437,12 +3467,12 @@ function lobbyBrandHTML(){
 function mileagePreviewHTML(){
   var org=demoInstitution();
   if(!org) return '<div class="lbsection"><div class="lbsec"><h2>마일리지</h2><span>기관 로그인 후 적립</span></div>'
-    +'<p class="uask">손님으로도 모든 연습과 출석을 이용할 수 있습니다. 마일리지는 기관 로그인 후 완료한 연습에만 적립됩니다.</p>'
+    +'<p class="uask">손님으로도 연습과 출석을 이용할 수 있습니다. 기관 로그인 후 하루 첫 미션 완료에 50P, 7일 연속 출석에 월 1회 100P가 쌓입니다.</p>'
     +'<button class="uplain" data-l="lv" data-v="user">기관 로그인</button></div>';
   var points=demoMileage().points;
   return '<div class="lbsection"><div class="lbsec"><h2>내 마일리지</h2><span>적립 현황</span></div>'
     +'<div class="mileage-total">'+points+'<small>P</small></div>'
-    +'<p class="unote">연습 하나를 처음 마칠 때마다 10P · 같은 연습은 하루 한 번만 적립</p>'
+    +'<p class="unote">하루 첫 미션 완료 +50P · 7일 연속 출석 +100P (월 1회)</p>'
     +'<button class="uplain" data-l="lv" data-v="mileage">적립 내역과 혜택 예시 보기</button></div>';
 }
 function vMileage(){
@@ -3451,21 +3481,20 @@ function vMileage(){
     +'<div class="lbsection"><div class="lbsec"><h2>기관 로그인 후 적립</h2></div>'
     +'<p class="uask">연습은 로그인 없이도 이용할 수 있습니다. 마일리지는 기관 계정으로 들어온 뒤부터 쌓입니다.</p>'
     +'<button class="bigact" data-l="lv" data-v="user">기관 로그인</button></div></div>';
-  var data=demoMileage(), points=data.points, left=Math.max(0,100-points);
+  var data=demoMileage(), points=data.points, claimed=monthlyStreakClaimed();
   var entries=data.entries.slice(0,20).map(function(x){
     var mission=MISSIONS[x.mode] && MISSIONS[x.mode][x.mi];
-    var title=mission?mission.t.replace(/<[^>]*>/g,""):"연습 완료";
-    return '<div class="mileage-entry"><b>'+esc(storeName(x.mode))+' · '+esc(title)+'</b>'
-      +'<small>'+esc(x.date)+' · +10P</small></div>';
+    var title=x.kind==="streak"?"7일 연속 출석 보상":x.kind==="daily"?"오늘 첫 미션 완료":mission?mission.t.replace(/<[^>]*>/g,""):"이전 미션 완료";
+    return '<div class="mileage-entry"><b>'+esc(title)+'</b>'
+      +'<small>'+esc(x.date)+' · +'+x.points+'P</small></div>';
   }).join("");
   return '<div class="lobby">'+lbTop("내 마일리지")
     +'<div class="lbsection"><div class="lbsec"><h2>'+esc(org.name)+' 마일리지</h2><span>이 기기에 저장</span></div>'
     +'<p class="mileage-total">'+points+'<small>P</small></p>'
-    +'<p class="unote">기관 로그인 후 새로 완료한 연습에 10P가 쌓입니다. 같은 연습은 하루 한 번만 적립합니다.</p></div>'
-    +'<div class="lbsection"><div class="lbsec"><h2>도서관 혜택 예시</h2><span>100P</span></div>'
-    +'<p class="uask">예시: 협약 도서관의 디지털 교육 프로그램 신청 혜택</p>'
-    +'<div class="mileage-progress" role="progressbar" aria-label="혜택 예시까지 진행률" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+Math.min(points,100)+'"><span style="width:'+Math.min(points,100)+'%"></span></div>'
-    +'<p class="unote">'+(left?left+'P 더 쌓으면 100P가 됩니다.':'100P에 도달했습니다.')+' 실제 혜택 교환은 기관 연동 후에만 가능합니다.</p></div>'
+    +'<p class="unote">하루 첫 미션을 마치면 50P를 적립합니다.</p></div>'
+    +'<div class="lbsection"><div class="lbsec"><h2>연속 출석 보상</h2><span>월 1회</span></div>'
+    +'<p class="uask">7일 연속 출석하면 100P를 추가로 적립합니다.</p>'
+    +'<p class="unote">'+(claimed?'이번 달 100P 보상을 받았습니다.':'이번 달 보상은 아직 받지 않았습니다.')+' 실제 도서관 혜택 교환은 기관 연동 후 가능합니다.</p></div>'
     +'<div class="lbsection"><div class="lbsec"><h2>적립 내역</h2><span>최근 '+Math.min(data.entries.length,20)+'건</span></div>'
     +(entries||'<p class="lbempty">아직 적립 내역이 없습니다. 오늘의 연습을 하나 완료해 보세요.</p>')+'</div>'
     +'<p class="lbnote">현재 기관 포털 인증과 실제 혜택 교환은 연결되지 않았습니다. 마일리지 기록은 이 기기에만 남습니다.</p></div>';
@@ -3502,7 +3531,7 @@ function vLobby(){
     return '<button class="lbrow'+(done?" done":"")+'" data-l="go" data-m="'+pl.mode+'" data-i="'+pl.mi+'">'
       +'<span class="no">'+(done?checkSVG():(idx+1))+'</span>'
       +'<span class="tx"><span class="md">'+DATA[pl.mode].store
-        +(pl.r?'<span class="lvtag rv">다시 해보기</span>':'<span class="lvtag'+(lvv==="심화"?" adv":"")+'">'+lvv+'</span>')+'</span><b>'+txt+'</b></span>'
+        +(pl.r?'<span class="lvtag rv">다시 해보기</span>':'<span class="lvtag'+(lvv==="어려움"?" adv":"")+'">'+lvv+'</span>')+'</span><b>'+txt+'</b></span>'
       +'<span class="act">'+(done?'다 했습니다':'시작')+'</span></button>';
   }).join("");
 
@@ -3522,7 +3551,7 @@ function vLobby(){
       +'<div class="row">'+lobbyBrandHTML()
         +'<button class="lbbigbtn" data-l="big" aria-pressed="'+(S.big?"true":"false")+'">글씨 크게</button></div>'
       +'<div class="dtrow"><div class="dt">'+(now.getMonth()+1)+'월 '+now.getDate()+'일 '+W[now.getDay()]+'요일</div>'
-        +'<button class="lbcls" data-l="lv" data-v="class">'+(S.cls||"기초반")+' <small>바꾸기</small></button></div>'
+        +'<button class="lbcls" data-l="lv" data-v="class">'+S.cls+' <small>바꾸기</small></button></div>'
       +'<h1>'+(userName()? esc(userName())+'님,<br>오늘도 한 가지씩' : '오늘도 한 가지씩')+'</h1>'
       +cta
       +whoRow()
@@ -3545,6 +3574,7 @@ function vLobby(){
           +(DAILY.best?'<div class="vv"><b>'+DAILY.best+'</b><span>일</span></div>'
                       :'<div class="vv none"><b>아직 없음</b></div>')+'</div>'
       +'</div>'
+      +'<p class="unote">7일 연속 출석 +100P (월 1회) · 로그인한 기관 체험 계정에 적립</p>'
     +'</div>'
 
     +'<div class="lbsection">'
@@ -3568,7 +3598,9 @@ function vLobby(){
       +modes
     +'</div>'
     +'<div class="lbsection install-box"><h2>앱처럼 쓰기</h2>'
-      +'<p>휴대폰 브라우저 메뉴에서 <b>홈 화면에 추가</b>를 누르면 앱 아이콘이 생깁니다.</p>'
+      +'<p>이 사이트를 휴대폰 홈 화면에 추가하면 아이콘으로 열 수 있습니다.</p>'
+      +'<p><b>아이폰 Safari:</b> 공유 → 홈 화면에 추가 → 웹 앱으로 열기(보이면 켜기) → 추가</p>'
+      +'<p><b>안드로이드 Chrome:</b> 메뉴(⋮) → 앱 설치 또는 홈 화면에 추가</p>'
       +'<button data-l="install" id="installBtn"'+(installPrompt?'':' hidden')+'>이 휴대폰에 추가하기</button>'
     +'</div>'
     +'<p class="lbnote">여기 나오는 가게·은행·기차는 연습을 위해 지어낸 것입니다. 실제로 주문되거나 돈이 나가지 않습니다.</p>'
@@ -4775,8 +4807,8 @@ function softReset(){
   resetTimer();
 }
 function setMode(m){
-  S.mode=m; if(m!=="lobby") S.mission=0; else S.lv=S.cls?"home":"class";
-  S.missionOpen=m!=="lobby";
+  S.mode=m; if(m!=="lobby") S.mission=0; else S.lv="home";
+  S.missionOpen=m!=="lobby" && S.cls==="어려움";
   [].forEach.call(el.ms.querySelectorAll("button"),function(x){
     x.setAttribute("aria-pressed", String(x.getAttribute("data-m")===m));
   });
@@ -4837,6 +4869,7 @@ el.timer.addEventListener("click", function(){
   save(); resetTimer(); render();
 });
 document.getElementById("btnMission").addEventListener("click",function(){S.missionOpen=true;paintMission();el.tbar.hidden=true;});
+document.getElementById("missionPinExpand").addEventListener("click",function(){S.missionOpen=true;paintMission();el.tbar.hidden=true;});
 document.getElementById("missionClose").addEventListener("click",closeMission);
 document.getElementById("missionChange").addEventListener("click",function(){
   S.mission=(S.mission+1)%MISSIONS[S.mode].length; softReset(); render();
@@ -4865,7 +4898,7 @@ el.swap.addEventListener("click", function(){
 
 
 /* ===================== 수업 연계 · 기록 · 막힘 도움 ===================== */
-/* 미션 난이도 — 기초반(12주·주 2회·24회차) / 심화반(25주·주 3회·75회차) */
+/* 미션 난이도: 초보자용과 어려움 */
 var LEVEL={
   cafe:["기초","기초","심화","심화"],
   burger:["기초","기초","심화","심화"],
@@ -4874,7 +4907,7 @@ var LEVEL={
   train:["기초","기초","심화","심화","기초","심화"],
   bank:["기초","기초","심화","심화","심화","기초","기초"]
 };
-function lvOf(m,i){ return (LEVEL[m]&&LEVEL[m][i])||"기초"; }
+function lvOf(m,i){ return LEVEL[m]&&LEVEL[m][i]==="심화"?"어려움":"초보자용"; }
 /* 키오스크 미션이 찾아야 하는 메뉴 — 힌트가 정확한 메뉴와 탭을 가리키게 합니다 */
 var NEED={
   cafe:[["c_ame_i"],["c_lat_h"],["c_ame_i","d_che"],["c_ame_i"]],
@@ -4882,10 +4915,10 @@ var NEED={
   snack:[["n_tte","n_sun"],["n_kim"],["n_ram","n_bap"],["n_jjo","n_eum"]]
 };
 var CLASSINFO={
-  "기초반":{sch:"12주 · 주 2회 · 24회차",
-    pts:["시간 제한 없이 천천히 연습합니다","헷갈려서 두 번 헛누르면 누를 곳이 반짝입니다","기초 미션 18가지에서 매일 골라 드립니다"]},
-  "심화반":{sch:"25주 · 주 3회 · 75회차",
-    pts:["실제 키오스크처럼 시간 제한이 있습니다","도움은 세 번 헛누른 뒤에 나옵니다","어려운 미션 위주로, 기초 복습을 섞어 드립니다"]}
+  "초보자용":{sch:"천천히 익히기",
+    pts:["시간 제한 없이 연습할 수 있습니다","미션 안내가 연습 화면 위에 계속 보입니다","쉬운 미션에서 매일 골라 드립니다"]},
+  "어려움":{sch:"실전처럼 도전하기",
+    pts:["시간 제한을 켜고 연습할 수 있습니다","미션 안내는 필요할 때 다시 열 수 있습니다","어려운 미션 위주로 쉬운 복습을 섞어 드립니다"]}
 };
 
 /* --- 연습 기록 (기기 안에만 저장) --- */
@@ -4943,9 +4976,9 @@ function reviewList(){
 
 /* 오늘의 세 가지 — 반에 맞춰 고르고, 다시 해볼 것이 있으면 하나를 끼워 넣습니다 */
 function makePlan(ds){
-  var cls=S.cls||"기초반", basic=[], adv=[];
+  var cls=S.cls, basic=[], adv=[];
   Object.keys(MISSIONS).forEach(function(m){ MISSIONS[m].forEach(function(_,i){
-    (lvOf(m,i)==="심화"?adv:basic).push({mode:m,mi:i}); }); });
+    (lvOf(m,i)==="어려움"?adv:basic).push({mode:m,mi:i}); }); });
   var h=h32(ds+cls), out=[], used={};
   function pick(pool,n){
     var g=0;
@@ -4955,8 +4988,8 @@ function makePlan(ds){
       if(!used[k]){ used[k]=1; out.push({mode:c.mode,mi:c.mi}); }
     }
   }
-  pick(cls==="심화반"?adv:basic,2);
-  var rv=reviewList();
+  pick(cls==="어려움"?adv:basic,2);
+  var rv=reviewList().filter(function(x){return cls==="어려움" || lvOf(x.mode,x.mi)==="초보자용";});
   for(var i=0;i<rv.length && out.length<3;i++){
     var k=mkey(rv[i].mode,rv[i].mi);
     if(!used[k]){ used[k]=1; out.push({mode:rv[i].mode,mi:rv[i].mi,r:1}); }
@@ -5003,8 +5036,8 @@ function hintNow(){
   if(t){ t.classList.add("hintpulse"); try{ t.scrollIntoView({block:"nearest",behavior:"smooth"}); }catch(x){} return true; }
   return false;
 }
-function missLimit(){ return S.cls==="심화반"?3:2; }
-function idleLimit(){ return S.cls==="심화반"?35:20; }
+function missLimit(){ return S.cls==="어려움"?3:2; }
+function idleLimit(){ return S.cls==="어려움"?35:20; }
 function onNoop(hitBtn){
   NOOP++; attStat("w",1);
   if(!hitBtn && NOOP===1){ toast("여기는 누르는 곳이 아닙니다. 테두리가 있는 단추를 눌러 보세요."); }
@@ -5086,7 +5119,7 @@ function paintControls(){
 document.getElementById("ctlrow").addEventListener("click",function(e){
   var b=e.target.closest("[data-c]"); if(!b) return;
   var c=b.getAttribute("data-c");
-  if(c==="lobby"){ if(S.mode==="lobby"){ S.lv=S.cls?"home":"class"; render(); el.screen.scrollTop=0; } else { setMode("lobby"); render(); } }
+  if(c==="lobby"){ if(S.mode==="lobby"){ S.lv="home"; render(); el.screen.scrollTop=0; } else { setMode("lobby"); render(); } }
   else if(c==="record"||c==="help"){ S.lv=c; render(); el.screen.scrollTop=0; }
   else if(c==="map"){ if(S.mode!=="lobby") setMode("lobby"); S.lv="map"; render(); el.screen.scrollTop=0; }
   else if(c==="picker"){ S.picker=true; paintPicker(); }
@@ -5100,21 +5133,16 @@ function lbTop(title){
   return '<div class="lbtop"><button data-l="lv" data-v="home">'+CI("left")+'로비</button><h1>'+title+'</h1></div>';
 }
 function vClass(){
-  var first=!S.cls;
-  var cards=["기초반","심화반"].map(function(c){
+  var cards=["초보자용","어려움"].map(function(c){
     var info=CLASSINFO[c];
     return '<button class="clscard" data-l="cls" data-v="'+c+'" aria-pressed="'+(S.cls===c)+'">'
-      +'<span class="t"><b>'+c+'</b><span>'+(c==="기초반"?"처음 3개월":"다음 3개월")+'</span></span>'
-      +'<span class="sch" style="display:block">'+info.sch+'</span>'
+      +'<span class="t"><b>'+c+'</b><span>'+info.sch+'</span></span>'
       +'<span class="ul">'+info.pts.map(function(p){return '<span class="li">'+p+'</span>';}).join("")+'</span>'
-      +'<span class="pick">'+(S.cls===c?'지금 이 반입니다':c+'으로 시작하기')+'</span></button>';
+      +'<span class="pick">'+(S.cls===c?'현재 선택됨':c+'으로 바꾸기')+'</span></button>';
   }).join("");
-  return '<div class="lobby">'
-    +(first?'':lbTop("반 바꾸기"))
-    +'<div class="lbintro">'
-      +(first?'<h2>어서 오세요.<br>어느 반에서 배우세요?</h2>'
-             :'<h2>어느 반으로 바꿀까요?</h2>')
-      +'<p>반에 맞춰 매일 할 연습 세 가지와 도움 방식을 정해 드립니다. 잘 모르시면 <b>기초반</b>을 고르세요. 나중에 언제든 바꿀 수 있습니다.</p>'
+  return '<div class="lobby">'+lbTop("난이도 바꾸기")
+    +'<div class="lbintro"><h2>연습 난이도를 고르세요</h2>'
+      +'<p>처음에는 초보자용으로 시작합니다. 언제든 어려움으로 바꿀 수 있습니다.</p>'
     +'</div>'
     +'<div style="padding:0 calc(var(--lu)*16) calc(var(--lu)*24)">'+cards+'</div>'
   +'</div>';
@@ -5280,7 +5308,7 @@ function recordText(){
     days.forEach(function(ds){ var t=dayTotals(ds); if((DAILY.hist||[]).indexOf(ds)>-1) att++; ok+=t.ok; w+=t.w; h+=t.h; });
     lines.push("## 최근 7일 연습 기록 ("+dlabel(days[0])+" ~ "+dlabel(days[6])+")");
     if(nm) lines.push("- 이름: "+nm);
-    lines.push("- 반: "+(S.cls||"기초반"));
+    lines.push("- 난이도: "+S.cls);
     lines.push("- 연습한 날: "+att+"일 / 마친 연습: "+ok+"개 / 헤맨 횟수: "+w+"번 / 반짝임 도움: "+h+"번");
     lines.push(""); lines.push("### 날짜별");
     days.forEach(function(ds){ var t=dayTotals(ds);
@@ -5292,7 +5320,7 @@ function recordText(){
     var ds=todayStr(), d=LOG.days[ds]||{}, t=dayTotals(ds);
     lines.push("## "+dlabel(ds)+" 연습 기록");
     if(nm) lines.push("- 이름: "+nm);
-    lines.push("- 반: "+(S.cls||"기초반"));
+    lines.push("- 난이도: "+S.cls);
     lines.push("- 출석: "+(DAILY.attended?"함 (연속 "+(DAILY.streak||0)+"일째)":"아직"));
     lines.push("- 마친 연습: "+t.ok+"개 / 헤맨 횟수: "+t.w+"번 / 반짝임 도움: "+t.h+"번");
     lines.push(""); lines.push("### 연습한 것");
@@ -5464,12 +5492,13 @@ function lobbyAct(lb){
     toast("손님으로 바꿨습니다. 연습과 출석은 그대로 됩니다."); return;
   }
   if(a==="cls"){
-    var first=!S.cls, changed=S.cls!==v;
-    S.cls=v; S.timerOn=(v==="심화반");
+    if(v!=="초보자용" && v!=="어려움") return;
+    var changed=S.cls!==v;
+    S.cls=v; S.timerOn=(v==="어려움");
     el.timer.setAttribute("aria-pressed",String(S.timerOn));
     if(changed){ DAILY.plan=makePlan(DAILY.date); DAILY.pcls=v; saveDaily(); }
     save(); S.lv="home"; render(); el.screen.scrollTop=0;
-    toast(first? v+"으로 시작합니다. 오늘 할 연습 세 가지를 골라 두었습니다." : v+"으로 바꿨습니다. 오늘 할 연습도 새로 골랐습니다.",true);
+    toast(v+"으로 바꿨습니다."+(changed?" 오늘 할 연습도 새로 골랐습니다.":""),true);
     return;
   }
   if(a==="range"){ S.recRange=v; render(); return; }
@@ -5508,10 +5537,9 @@ function boot(saved){
   if(curUser() && curUser().portalDemo && !demoInstitution()){ USERS.cur=""; saveUsers(); }
   loadLog(); loadPref(); loadDaily();
   if(userName()) S.name=userName();
-  if(!S.cls) S.lv="class";
   el.timer.setAttribute("aria-pressed",String(S.timerOn));
   if(saved&&saved.mode&&(saved.mode==="lobby"||MISSIONS[saved.mode])){ S.mode=saved.mode; S.mission=saved.mission||0; }
-  S.missionOpen=S.mode!=="lobby";
+  S.missionOpen=S.mode!=="lobby" && S.cls==="어려움";
   [].forEach.call(el.ms.querySelectorAll("button"),function(x){
     x.setAttribute("aria-pressed", String(x.getAttribute("data-m")===S.mode));
   });
