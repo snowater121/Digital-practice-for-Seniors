@@ -1636,6 +1636,11 @@ html:not([data-mode="lobby"]) .device{border-width:3px;border-radius:0;box-shado
 .taxi-progress{height:8px;margin:0 0 11px;border-radius:99px;background:#E3E9F1;overflow:hidden}.taxi-progress i{display:block;height:100%;background:#3177EA;transition:width .7s linear}
 .taxi-note{display:block;margin-top:8px;font-size:12px;line-height:1.45;color:#647182}
 @media(max-height:690px){.taxi-map-wrap{min-height:185px}.taxi-sheet{padding-top:11px;padding-bottom:12px}.taxi-sheet h1{font-size:20px}.taxi-option{min-height:54px}}
+.tutorial-layer{position:fixed;inset:0;z-index:10000;pointer-events:none}
+.tutorial-shade{position:fixed;background:rgba(12,25,43,.7);pointer-events:auto}
+.tutorial-ring{position:fixed;box-sizing:border-box;border:3px solid #ffcb50;border-radius:12px;box-shadow:0 0 0 3px #fff,0 0 18px #ffcb50;pointer-events:none}
+.tutorial-card{position:fixed;box-sizing:border-box;width:min(360px,calc(100vw - 24px));max-height:min(70vh,500px);overflow:auto;padding:20px;border-radius:18px;background:#fff;color:#1d2938;box-shadow:0 12px 38px #0005;pointer-events:auto;line-height:1.5}
+.tutorial-card small{display:block;color:#235bac;font-weight:900;font-size:13px}.tutorial-card h2{margin:7px 0 8px;font-size:22px;line-height:1.35}.tutorial-card p{margin:0 0 14px;font-size:17px}.tutorial-actions{display:flex;gap:8px}.tutorial-actions button{min-height:48px;flex:1;padding:9px 12px;border-radius:10px;font-size:16px;font-weight:800}.tutorial-next{background:#225ebd;color:#fff}.tutorial-stop{background:#edf1f6;color:#263e59}
 </style>
 
 <div class="app">
@@ -5754,6 +5759,9 @@ var TERMS={
 function vHelp(){
   var tab=S.helpTab||"가게 주문";
   return '<div class="lobby">'+lbTop("막힐 때 보는 안내")
+    +'<div class="lbsection"><div class="lbsec"><h2>처음부터 배워보기</h2></div>'
+      +'<p>실제 화면의 버튼을 눌러가며 이용 방법을 다시 익힐 수 있습니다.</p>'
+      +'<button class="lbcta" data-l="tutorial"><span class="tx"><b>이용 안내 다시 시작</b><small>언제든 그만둘 수 있습니다</small></span><span class="cv">'+chevSVG()+'</span></button></div>'
     +'<div class="lbsection">'
       +'<div class="lbsec"><h2>막히면 이 순서대로</h2><span>아래 단추 그대로</span></div>'
       +'<ol class="steps">'
@@ -5792,6 +5800,7 @@ function copyRecord(btn){
 }
 function lobbyAct(lb){
   var a=lb.getAttribute("data-l"), v=lb.getAttribute("data-v");
+  if(a==="tutorial"){startTutorial();return;}
   if(a==="install"){
     if(installPrompt){ installPrompt.prompt(); installPrompt=null; render(); }
     return;
@@ -5859,6 +5868,80 @@ function lobbyAct(lb){
   if(S.bk)S.bk.big=S.big; if(S.tr)S.tr.big=S.big;
   render();
 }
+/* 첫 이용 안내: 강조된 실제 버튼을 눌러야 다음 화면으로 넘어갑니다. */
+var TUTORIAL_KEY="digital-practice-tutorial-v1";
+var tutorialStep=-1, tutorialLayer=null;
+var TUTORIAL=[
+  {title:"디지털 연습소에 오신 것을 환영합니다",body:"화면의 버튼을 직접 눌러 연습을 시작해 볼게요. 로그인하지 않아도 이용할 수 있고, 연습 중 실제 결제는 되지 않습니다."},
+  {title:"난이도를 살펴보세요",body:"화면 위의 난이도 바꾸기를 눌러 보세요.",target:'[data-l="lv"][data-v="class"]',done:function(){return S.mode==="lobby"&&S.lv==="class";}},
+  {title:"난이도를 선택하세요",body:"현재 선택된 난이도를 눌러 로비로 돌아가세요. 나중에 다시 바꿀 수 있습니다.",target:function(){return '[data-l="cls"][data-v="'+S.cls+'"]';},done:function(){return S.mode==="lobby"&&S.lv==="home";}},
+  {title:"오늘의 연습을 시작하세요",body:"오늘 연습 시작하기를 눌러 실제 연습 화면으로 들어가세요.",target:'.lbcta[data-l="go"],.lbcta[data-l="mode"]',done:function(){return S.mode!=="lobby";}},
+  {title:"미션을 읽어 보세요",body:"위쪽의 오늘 미션 보기를 누르면 해야 할 일을 확인할 수 있습니다.",target:'#btnMission',done:function(){return S.missionOpen;}},
+  {title:"미션 창을 닫아 보세요",body:"내용을 읽은 뒤 연습 시작하기를 눌러 화면으로 돌아가세요. 초보자용에서는 미션이 계속 보입니다.",target:'#missionClose',done:function(){return !S.missionOpen;}},
+  {title:"로비로 돌아가세요",body:"아래 로비 버튼을 눌러 처음 화면으로 돌아가세요.",target:'#ctlrow [data-c="lobby"]',done:function(){return S.mode==="lobby"&&S.lv==="home";}},
+  {title:"다른 연습도 찾아보세요",body:"가게 고르기를 누르면 카페, 은행, 택시 등 다른 연습을 고를 수 있습니다.",target:'#ctlrow [data-c="picker"]',done:function(){return S.picker;}},
+  {title:"가게 목록을 닫아 보세요",body:"가게 목록을 살펴본 뒤 닫기 버튼을 누르세요.",target:'.picker .hd [data-p="close"]',done:function(){return !S.picker;}},
+  {title:"도움말을 찾아보세요",body:"막힐 때를 누르면 설명을 볼 수 있고 이 안내도 다시 시작할 수 있습니다.",target:'#ctlrow [data-c="help"]',done:function(){return S.mode==="lobby"&&S.lv==="help";}},
+  {title:"잘하셨어요!",body:"이제 원하는 연습을 자유롭게 이용해 보세요. 오늘 기록과 지도도 아래 탭에 있습니다. 이 안내는 막힐 때 탭에서 언제든 다시 볼 수 있습니다."}
+];
+function tutorialSeen(){try{return localStorage.getItem(TUTORIAL_KEY)==="1";}catch(e){return false;}}
+function stopTutorial(){
+  tutorialStep=-1;
+  if(tutorialLayer){tutorialLayer.remove();tutorialLayer=null;}
+  try{localStorage.setItem(TUTORIAL_KEY,"1");}catch(e){}
+}
+function startTutorial(){
+  if(tutorialLayer) tutorialLayer.remove();
+  if(S.picker){S.picker=false;paintPicker();}
+  setMode("lobby");render();el.screen.scrollTop=0;
+  tutorialStep=0;
+  tutorialLayer=document.createElement("div");
+  tutorialLayer.className="tutorial-layer";
+  document.body.appendChild(tutorialLayer);
+  tutorialLayer.addEventListener("click",function(e){
+    var action=e.target.closest("[data-tutorial]");
+    if(!action) return;
+    if(action.dataset.tutorial==="stop"){stopTutorial();return;}
+    if(tutorialStep===0){tutorialStep=1;paintTutorial();}
+    else if(tutorialStep===TUTORIAL.length-1) stopTutorial();
+  });
+  paintTutorial();
+}
+function paintTutorial(){
+  if(tutorialStep<0||!tutorialLayer) return;
+  /* 어려움은 미션 창이 자동으로 열립니다. */
+  if(tutorialStep===4&&S.missionOpen) tutorialStep=5;
+  var step=TUTORIAL[tutorialStep], sel=typeof step.target==="function"?step.target():step.target;
+  var target=sel?document.querySelector(sel):null;
+  if(sel&&!target){stopTutorial();return;}
+  if(target) target.scrollIntoView({block:"nearest",behavior:"auto"});
+  var box=target?target.getBoundingClientRect():null, w=innerWidth,h=innerHeight;
+  var left=box?Math.max(0,box.left-7):0,top=box?Math.max(0,box.top-7):0;
+  var right=box?Math.min(w,box.right+7):0,bottom=box?Math.min(h,box.bottom+7):0;
+  var rects=box?[[0,0,w,top],[0,bottom,w,h-bottom],[0,top,left,bottom-top],[right,top,w-right,bottom-top]]:[[0,0,w,h]];
+  tutorialLayer.innerHTML=rects.map(function(r){return '<div class="tutorial-shade" style="left:'+r[0]+'px;top:'+r[1]+'px;width:'+Math.max(0,r[2])+'px;height:'+Math.max(0,r[3])+'px"></div>';}).join("")
+    +(box?'<div class="tutorial-ring" style="left:'+left+'px;top:'+top+'px;width:'+(right-left)+'px;height:'+(bottom-top)+'px"></div>':"")
+    +'<div class="tutorial-card" role="dialog" aria-label="이용 안내" aria-live="polite">'
+    +'<small>'+(tutorialStep===0?'시작하기':tutorialStep===TUTORIAL.length-1?'안내 완료':tutorialStep+' / '+(TUTORIAL.length-2))+'</small>'
+    +'<h2>'+step.title+'</h2><p>'+step.body+'</p><div class="tutorial-actions">'
+    +(sel?'<button class="tutorial-stop" data-tutorial="stop">그만보기</button>':'<button class="tutorial-stop" data-tutorial="stop">'+(tutorialStep===0?'나중에':'닫기')+'</button><button class="tutorial-next" data-tutorial="next">'+(tutorialStep===0?'시작하기':'끝내기')+'</button>')
+    +'</div></div>';
+  var card=tutorialLayer.querySelector('.tutorial-card');
+  var cw=card.offsetWidth,ch=card.offsetHeight;
+  card.style.left=Math.max(12,Math.min(w-cw-12,box?box.left:Math.round((w-cw)/2)))+'px';
+  card.style.top=(box?(h-bottom>=ch+16?Math.min(h-ch-12,bottom+12):Math.max(12,top-ch-12)):Math.max(12,Math.round((h-ch)/2)))+'px';
+}
+document.addEventListener("click",function(e){
+  if(tutorialStep<1||tutorialStep>=TUTORIAL.length-1||!tutorialLayer) return;
+  if(tutorialLayer.contains(e.target)) return;
+  var step=TUTORIAL[tutorialStep],sel=typeof step.target==="function"?step.target():step.target;
+  var target=document.querySelector(sel);
+  if(!target||!target.contains(e.target)){e.preventDefault();e.stopPropagation();return;}
+  setTimeout(function(){if(tutorialStep>=0&&TUTORIAL[tutorialStep]===step&&step.done()){tutorialStep++;paintTutorial();}},30);
+},true);
+document.addEventListener("keydown",function(e){if(tutorialStep>=0&&e.key==="Escape") stopTutorial();});
+window.addEventListener("resize",function(){if(tutorialStep>=0)paintTutorial();});
+document.addEventListener("scroll",function(){if(tutorialStep>=0)paintTutorial();},true);
 el.screen.addEventListener("input",function(e){
   var id=e.target.id;
   if(id==="demoId"){ S.demoId=e.target.value; return; }
@@ -5899,6 +5982,7 @@ function boot(saved){
     x.setAttribute("aria-pressed", String(x.getAttribute("data-m")===S.mode));
   });
   paintDaily(); resetTimer(); startTick(); render();
+  if(!tutorialSeen()) startTutorial();
 }
 if(window.claude&&window.claude.hot){
   window.claude.hot.snapshot(function(){ return {mode:S.mode,mission:S.mission}; });
