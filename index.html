@@ -73,6 +73,8 @@
   --font-k:'Noto Sans KR',sans-serif;
   --font-disp:'Noto Sans KR',sans-serif;
 }
+/* 모바일 택시 연습 — 지도와 하단 선택 카드 */
+[data-mode="taxi"]{--k-bg:#F5F6FA;--k-fg:#20242B;--font-k:'Noto Sans KR',sans-serif;--font-disp:'Noto Sans KR',sans-serif}
 
 html,body{height:100%;}
 body{
@@ -1588,6 +1590,50 @@ html:not([data-mode="lobby"]) .device{border-width:3px;border-radius:0;box-shado
 .install-box{padding:16px;font-size:16px;line-height:1.6}
 .install-box p{margin:6px 0 0}
 .install-box button{min-height:48px;padding:8px 16px;background:#1A3D7C;color:#fff;border-radius:8px;font-size:16px}
+.taxi-app{height:100%;min-height:100%;display:flex;flex-direction:column;background:#F5F6FA;color:#20242B;font-family:'Noto Sans KR',sans-serif}
+.taxi-head{flex:none;display:flex;align-items:center;gap:10px;min-height:56px;padding:10px 16px;background:#FFD15A;color:#1F2937}
+.taxi-brand{display:flex;align-items:center;gap:8px;font-size:19px;font-weight:900;letter-spacing:-.03em}
+.taxi-brand i{display:grid;place-items:center;width:27px;height:27px;border-radius:6px;background:#213E80;color:#FFD15A;font-style:normal;font-size:17px}
+.taxi-head small{margin-left:auto;font-size:12px;font-weight:800}
+.taxi-map-wrap{position:relative;flex:1;min-height:250px;background:#DDE5E5;overflow:hidden}
+.taxi-map{position:absolute;inset:0;z-index:0}
+.taxi-map-pin{position:absolute;left:50%;top:50%;z-index:400;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;pointer-events:none;filter:drop-shadow(0 3px 5px #0005)}
+.taxi-map-pin b{display:grid;place-items:center;width:47px;height:47px;border-radius:50%;border:3px solid #fff;background:#FFD15A;font-size:24px}
+.taxi-map-pin.dest b{background:#2563D9;color:#fff;font-size:25px}
+.taxi-map-pin:after{content:"";width:4px;height:19px;background:#243347;border-radius:3px}
+.taxi-map-caption{position:absolute;z-index:400;left:12px;top:12px;max-width:calc(100% - 24px);padding:9px 12px;border-radius:9px;background:#fff;box-shadow:0 2px 10px #0002;font-size:14px;font-weight:800;line-height:1.4}
+.taxi-locate{position:absolute;right:12px;bottom:16px;z-index:400;min-height:48px;padding:8px 13px;border-radius:999px;background:#fff;color:#173A7C;box-shadow:0 2px 9px #0003;font-size:14px;font-weight:900}
+.taxi-map .leaflet-control-attribution{font-size:10px}
+.taxi-car{display:grid;place-items:center;width:38px;height:38px;border:3px solid #fff;border-radius:50%;background:#FFD15A;box-shadow:0 2px 9px #0004;font-size:19px}
+.taxi-sheet{flex:none;position:relative;z-index:1;background:#fff;border-radius:18px 18px 0 0;box-shadow:0 -4px 14px #0001;padding:16px 17px calc(18px + env(safe-area-inset-bottom,0px))}
+.taxi-step{display:block;color:#345EB2;font-size:12px;font-weight:900;letter-spacing:.05em}
+.taxi-sheet h1{margin:4px 0 8px;font-size:23px;line-height:1.28;letter-spacing:-.04em}
+.taxi-sheet p{margin:0 0 12px;font-size:14px;line-height:1.5;color:#536071}
+.taxi-coord{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:8px 0;padding:10px 12px;border:1px solid #D8DEE9;border-radius:10px;font-size:13px;color:#536071}
+.taxi-coord b{font-size:15px;color:#20242B}
+.taxi-field{display:block;margin:9px 0 12px;font-size:13px;font-weight:800;color:#39465A}
+.taxi-field input{display:block;width:100%;min-height:49px;margin-top:5px;padding:9px 11px;border:1px solid #AEB9C9;border-radius:9px;background:#fff;color:#20242B;font:inherit;font-size:16px}
+.taxi-route{display:grid;gap:9px;margin:8px 0 13px;padding:12px;border-radius:10px;background:#F3F6FC}
+.taxi-route span{display:flex;align-items:flex-start;gap:9px;font-size:14px;line-height:1.4}
+.taxi-route i{flex:none;width:10px;height:10px;margin-top:5px;border-radius:50%;background:#2E67D2}
+.taxi-route span:first-child i{background:#233345}
+.taxi-route b{overflow-wrap:anywhere}
+.taxi-options{display:grid;gap:8px;margin:10px 0 14px}
+.taxi-option{display:flex;align-items:center;gap:11px;width:100%;min-height:64px;padding:10px 12px;border:2px solid #DDE3EA;border-radius:12px;text-align:left;background:#fff}
+.taxi-option[aria-pressed="true"]{border-color:#2970DC;background:#F4F8FF}
+.taxi-option .ico{font-size:25px}
+.taxi-option .tx{display:grid;gap:2px;flex:1}.taxi-option .tx b{font-size:16px}.taxi-option .tx small{font-size:12px;color:#566274}
+.taxi-option .price{font-size:15px;font-weight:900;white-space:nowrap}
+.taxi-fare{display:flex;align-items:flex-end;justify-content:space-between;gap:8px;padding:12px 0;border-top:1px solid #E2E6ED;font-size:14px;color:#536071}
+.taxi-fare b{font-size:21px;color:#20242B}
+.taxi-primary,.taxi-secondary{width:100%;min-height:53px;padding:10px 14px;border-radius:10px;font-size:17px;font-weight:900}
+.taxi-primary{background:#3177EA;color:#fff}.taxi-primary:disabled{background:#9DB5D6}
+.taxi-secondary{margin-top:8px;background:#EEF2F8;color:#234681}
+.taxi-status{display:flex;align-items:center;gap:11px;margin:8px 0 13px;padding:12px;border-radius:11px;background:#EFF6FF}
+.taxi-status .icon{font-size:29px}.taxi-status b{display:block;font-size:16px}.taxi-status small{font-size:13px;color:#506176}
+.taxi-progress{height:8px;margin:0 0 11px;border-radius:99px;background:#E3E9F1;overflow:hidden}.taxi-progress i{display:block;height:100%;background:#3177EA;transition:width .7s linear}
+.taxi-note{display:block;margin-top:8px;font-size:12px;line-height:1.45;color:#647182}
+@media(max-height:690px){.taxi-map-wrap{min-height:185px}.taxi-sheet{padding-top:11px;padding-bottom:12px}.taxi-sheet h1{font-size:20px}.taxi-option{min-height:54px}}
 </style>
 
 <div class="app">
@@ -1603,6 +1649,7 @@ html:not([data-mode="lobby"]) .device{border-width:3px;border-radius:0;box-shado
         <button data-m="bank" aria-pressed="false">모바일 뱅킹</button>
         <button data-m="table" aria-pressed="false">테이블 오더</button>
         <button data-m="train" aria-pressed="false">기차 예매</button>
+        <button data-m="taxi" aria-pressed="false">모바일 택시</button>
       </div>
     </div>
     <div class="daily" id="daily"></div>
@@ -1912,7 +1959,8 @@ var DATA = {
   },
   bank: { store:"들녘은행", label:"모바일 뱅킹", cats:[] },
   train:{ store:"한길철도", label:"기차 예매", cats:[] },
-  table:{ store:"한잔호프", label:"테이블 오더", cats:[] }
+  table:{ store:"한잔호프", label:"테이블 오더", cats:[] },
+  taxi:{ store:"모두택시", label:"모바일 택시", cats:[] }
 };
 
 /* 뱅킹 데이터 (가상) */
@@ -2027,7 +2075,13 @@ MISSIONS.train=[
  {t:"산 표를 <b>반환하고 수수료</b>가 얼마인지 확인하세요.",
   ck:function(s){return s.tr.refunded;}}
 ];
-var MODE_LABEL = {cafe:"카페", burger:"패스트푸드", snack:"분식", table:"테이블", bank:"뱅킹", train:"기차"};
+MISSIONS.taxi=[
+ {t:"지도에서 <b>탈 곳과 갈 곳</b>을 정하고, 결제 수단을 선택해 택시가 오는 화면까지 확인하세요.",
+  ck:function(s){return s.tx && s.tx.arrived;}},
+ {t:"<b>넓은 차량</b>을 고르고, <b>연습용 카드</b>로 결제한 뒤 택시 도착까지 확인하세요.",
+  ck:function(s){return s.tx && s.tx.arrived && s.tx.vehicle==="wide" && s.tx.payment==="card";}}
+];
+var MODE_LABEL = {cafe:"카페", burger:"패스트푸드", snack:"분식", table:"테이블", bank:"뱅킹", train:"기차", taxi:"택시"};
 
 function names(s){return s.cart.map(function(i){return i.nm;}).join("|");}
 function cnt(s,nm){var n=0;s.cart.forEach(function(i){
@@ -2044,6 +2098,11 @@ function shuffled10(){
   for(i=a.length-1;i>0;i--){ j=Math.floor(Math.random()*(i+1)); t=a[i]; a[i]=a[j]; a[j]=t; }
   return a;
 }
+function freshTaxi(){
+  return {step:"pickup",center:{lat:37.5665,lon:126.978},pickup:null,destination:null,
+    pickupName:"",destinationName:"",gpsStatus:"",gpsUsed:false,locating:false,
+    vehicle:"standard",payment:"card",progress:0,arrived:false};
+}
 function freshBank(big){
   return {step:"login", pin:"", keymap:shuffled10(), balanceShown:false, big:!!big, segment:"mine",
           from:0, to:null, amt:0, toTab:"recent", bankPick:null, acctInput:"",
@@ -2055,7 +2114,7 @@ var S = {
   mode:"lobby", screen:"attract", cat:0, serve:null, cart:[],
   modal:null, pending:null, hints:false, timerOn:false, left:60,
   mission:0, orderNo:null, inserting:false, timedout:false, optErr:"", sub:"단품",
-  bk:freshBank(), tr:null, tb:null, big:false, picker:false,
+  bk:freshBank(), tr:null, tb:null, tx:freshTaxi(), big:false, picker:false,
   cls:"초보자용", lv:"home", name:"", recRange:"day", helpTab:null,
   ufnm:"", ufpin:"", uorg:"", uq:null, uqpin:"", uerr:"", umove:null,
   demoId:"", demoProvider:"", demoError:"",
@@ -2244,7 +2303,7 @@ function recordClear(mode,mi){
   if(DAILY.cleared.length>=3) DAILY.dayDone=true;
   if(justCleared) earned=earnDemoMileage(DAILY.streak,mode,mi);
   saveDaily(); paintDaily();
-  if(S.mode==="bank"||S.mode==="train"||S.mode==="table"){
+  if(S.mode==="bank"||S.mode==="train"||S.mode==="table"||S.mode==="taxi"){
     toast("미션 성공!"+(LASTRES?" 걸린 시간 "+secTxt(LASTRES.s)+" · 헤맨 횟수 "+LASTRES.w+"번":"")+(justCleared?" · 오늘 "+Math.min(DAILY.cleared.length,3)+"/3":"")+(earned?" · 마일리지 +"+earned+"P":""),true);
   }else if(earned) toast("미션 성공! 마일리지 +"+earned+"P",true);
 }
@@ -2297,7 +2356,7 @@ function curMission(){return MISSIONS[S.mode][S.mission];}
 
 /* ========== 타이머 ========== */
 function timerVisible(){
-  return !S.missionOpen && S.timerOn && S.mode!=="bank" && S.mode!=="train" && S.mode!=="table" && S.screen!=="attract" && S.screen!=="done";
+  return !S.missionOpen && S.timerOn && S.mode!=="bank" && S.mode!=="train" && S.mode!=="table" && S.mode!=="taxi" && S.screen!=="attract" && S.screen!=="done";
 }
 function resetTimer(){ S.left=60; S.timedout=false; el.tbar.hidden=!timerVisible(); paintTimer(); }
 function paintTimer(){ el.tfill.style.width=(S.left/60*100)+"%"; }
@@ -2334,6 +2393,8 @@ function paintMission(){
 function closeMission(){ S.missionOpen=false; paintMission(); el.tbar.hidden=!timerVisible(); }
 function render(){
   clearMap();
+  clearTaxiMap();
+  if(S.mode!=="taxi" || S.tx.step!=="dispatch") stopTaxiTimer();
   document.documentElement.setAttribute("data-mode",S.mode);
   el.timer.setAttribute("aria-pressed",String(S.timerOn));
   el.timer.querySelector("small").textContent=S.timerOn?"켜짐":"꺼짐";
@@ -2360,6 +2421,7 @@ function render(){
   if(S.mode==="table"){ if(!S.tb) S.tb=freshTable(); h=vTable(); }
   else if(S.mode==="train"){ if(!S.tr) S.tr=freshTrain(S.big); h=vTrain(); }
   else if(S.mode==="bank") h=vBank();
+  else if(S.mode==="taxi") h=vTaxi();
   else if(S.screen==="attract") h=vAttract();
   else if(S.screen==="serve") h=vServe();
   else if(S.screen==="menu") h=vMenu();
@@ -2381,6 +2443,10 @@ function render(){
   tg.textContent=lv; tg.className="tag"+(lv==="심화"?" adv":"");
 
   paintNowStore(); paintControls(); paintMission();
+  if(S.mode==="taxi"){
+    mountTaxiMap();
+    if(S.tx.step==="dispatch") startTaxiTimer();
+  }
   if((S.hints||AUTO) && HINT && !S.timedout){
     var t=el.screen.querySelector(HINT);
     if(t) t.classList.add("hintpulse");
@@ -3244,10 +3310,10 @@ document.addEventListener("click", function(e){
 });
 
 /* ===================== 로비 · 출석부 ===================== */
-var MODE_COLOR={cafe:"#143A2B",burger:"#C62828",snack:"#B8362A",table:"#1F6F4A",bank:"#1C6B3C",train:"#15468C"};
-var MODE_SHORT={cafe:"카페",burger:"버거",snack:"분식",table:"호프",bank:"은행",train:"기차"};
+var MODE_COLOR={cafe:"#143A2B",burger:"#C62828",snack:"#B8362A",table:"#1F6F4A",bank:"#1C6B3C",train:"#15468C",taxi:"#E5A716"};
+var MODE_SHORT={cafe:"카페",burger:"버거",snack:"분식",table:"호프",bank:"은행",train:"기차",taxi:"택시"};
 var MODE_WHAT={cafe:"커피 주문하기",burger:"햄버거 주문하기",snack:"분식 주문하기",
-  table:"식당에서 시키기",bank:"은행 일 보기",train:"기차표 사기"};
+  table:"식당에서 시키기",bank:"은행 일 보기",train:"기차표 사기",taxi:"택시 호출 연습"};
 function checkSVG(){
   return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>';
 }
@@ -3645,7 +3711,7 @@ function vLobby(){
       +'<p><b>안드로이드 Chrome:</b> 메뉴(⋮) → 앱 설치 또는 홈 화면에 추가</p>'
       +'<button data-l="install" id="installBtn"'+(installPrompt?'':' hidden')+'>이 휴대폰에 추가하기</button>'
     +'</div>'
-    +'<p class="lbnote">여기 나오는 가게·은행·기차는 연습을 위해 지어낸 것입니다. 실제로 주문되거나 돈이 나가지 않습니다.</p>'
+    +'<p class="lbnote">여기 나오는 가게·은행·기차·택시는 연습을 위해 지어낸 것입니다. 실제로 주문·결제·송금·택시 호출이 일어나지 않습니다.</p>'
     +'<span class="scrollhint" id="scrollhint">아래에 더 있습니다'+downSVG()+'</span>'
   +'</div>';
 }
@@ -3673,6 +3739,171 @@ function lobbyScrollHint(){
   }
   sc.onscroll=upd;
   setTimeout(upd,30);
+}
+
+/* ===================== 모바일 택시 연습 ===================== */
+var taxiMap=null, taxiCarMarker=null, taxiTimer=null;
+function clearTaxiMap(){
+  if(taxiMap){ taxiMap.remove(); taxiMap=null; taxiCarMarker=null; }
+}
+function stopTaxiTimer(){ if(taxiTimer){ clearInterval(taxiTimer); taxiTimer=null; } }
+function taxiDistance(a,b){
+  var rad=Math.PI/180, dlat=(b.lat-a.lat)*rad, dlon=(b.lon-a.lon)*rad;
+  var q=Math.sin(dlat/2)**2+Math.cos(a.lat*rad)*Math.cos(b.lat*rad)*Math.sin(dlon/2)**2;
+  return 6371*2*Math.atan2(Math.sqrt(q),Math.sqrt(1-q));
+}
+function taxiFare(){
+  var tx=S.tx, km=taxiDistance(tx.pickup,tx.destination);
+  return Math.round((Math.max(4800,4800+km*1200)+(tx.vehicle==="wide"?2500:0))/100)*100;
+}
+function taxiCoord(p){ return p.lat.toFixed(5)+", "+p.lon.toFixed(5); }
+function taxiRouteHTML(){
+  var tx=S.tx;
+  return '<div class="taxi-route"><span><i></i><b>탈 곳 · '+esc(tx.pickup.label)+'</b></span>'
+    +'<span><i></i><b>갈 곳 · '+esc(tx.destination.label)+'</b></span></div>';
+}
+function taxiPinHTML(label,kind){
+  return '<div class="taxi-map-pin'+(kind==="dest"?' dest':'')+'" aria-hidden="true"><b>'
+    +(kind==="dest"?'●':'🚕')+'</b></div><div class="taxi-map-caption">'+label+'</div>';
+}
+function vTaxi(){
+  var tx=S.tx, step=tx.step, selecting=step==="pickup"||step==="destination";
+  var h='<div class="taxi-app"><header class="taxi-head"><span class="taxi-brand"><i>T</i>모두택시</span><small>호출 연습</small></header>'
+    +'<div class="taxi-map-wrap"><div class="taxi-map" id="taxiMap" role="application" aria-label="택시 출발지와 목적지를 고르는 지도"></div>';
+  if(selecting){
+    h+=taxiPinHTML(step==="pickup"?'지도를 움직여 택시를 탈 지점에 맞추세요':'지도를 움직여 갈 곳에 맞추세요',step==="destination"?'dest':'pickup');
+    if(step==="pickup") h+='<button class="taxi-locate" data-x="locate">◎ 현재 위치 찾기</button>';
+  }
+  h+='</div><div class="taxi-sheet"><span class="taxi-step">'
+    +(step==="pickup"?'1 / 4 · 탈 곳':step==="destination"?'2 / 4 · 갈 곳':step==="vehicle"?'3 / 4 · 차량 선택':step==="payment"?'4 / 4 · 결제 수단':'호출 상태')+'</span>';
+  if(step==="pickup"){
+    HINT='[data-x="pickup"]';
+    h+='<h1>어디서 택시를 탈까요?</h1><p>현재 위치를 찾거나 지도를 움직여 가운데 택시 표시를 정확한 탑승 지점에 맞춰 주세요.</p>'
+      +'<div class="taxi-coord"><b>지도 가운데 위치</b><span id="taxiCoord">'+taxiCoord(tx.center)+'</span></div>'
+      +'<label class="taxi-field" for="taxiPickupName">탑승 지점 이름 (선택)<input id="taxiPickupName" maxlength="40" placeholder="예: 정문 앞" value="'+esc(tx.pickupName).replace(/"/g,"&quot;")+'"></label>'
+      +(tx.gpsStatus?'<p role="status">'+esc(tx.gpsStatus)+'</p>':'')
+      +'<button class="taxi-primary" data-x="pickup">여기서 탈게요</button>';
+  }else if(step==="destination"){
+    HINT='[data-x="destination"]';
+    h+='<h1>어디로 갈까요?</h1><p>지도를 움직여 가운데 파란 표시를 목적지에 맞춰 주세요. 지도 한 곳을 눌러도 이동합니다.</p>'
+      +'<div class="taxi-coord"><b>지도 가운데 위치</b><span id="taxiCoord">'+taxiCoord(tx.center)+'</span></div>'
+      +'<label class="taxi-field" for="taxiDestinationName">목적지 이름 (선택)<input id="taxiDestinationName" maxlength="40" placeholder="예: 도서관 입구" value="'+esc(tx.destinationName).replace(/"/g,"&quot;")+'"></label>'
+      +'<button class="taxi-primary" data-x="destination">이곳으로 갈게요</button>'
+      +'<button class="taxi-secondary" data-x="backPickup">탈 곳 다시 고르기</button>';
+  }else if(step==="vehicle"){
+    HINT='[data-x="nextPayment"]';
+    h+='<h1>어떤 택시를 부를까요?</h1>'+taxiRouteHTML()
+      +'<div class="taxi-options">'
+      +'<button class="taxi-option" data-x="vehicle" data-v="standard" aria-pressed="'+(tx.vehicle==="standard")+'"><span class="ico">🚕</span><span class="tx"><b>일반 택시</b><small>기본 차량</small></span><span class="price">'+won(taxiFare()-(tx.vehicle==="wide"?2500:0))+'</span></button>'
+      +'<button class="taxi-option" data-x="vehicle" data-v="wide" aria-pressed="'+(tx.vehicle==="wide")+'"><span class="ico">🚙</span><span class="tx"><b>넓은 차량</b><small>짐이 있을 때</small></span><span class="price">'+won(taxiFare()+(tx.vehicle==="wide"?0:2500))+'</span></button></div>'
+      +'<button class="taxi-primary" data-x="nextPayment">결제 수단 고르기</button>'
+      +'<button class="taxi-secondary" data-x="backDestination">갈 곳 다시 고르기</button>';
+  }else if(step==="payment"){
+    HINT='[data-x="pay"]';
+    h+='<h1>결제 수단을 선택하세요</h1>'+taxiRouteHTML()
+      +'<div class="taxi-options">'
+      +'<button class="taxi-option" data-x="payment" data-v="card" aria-pressed="'+(tx.payment==="card")+'"><span class="ico">💳</span><span class="tx"><b>연습용 카드</b><small>끝자리 1234 · 실제 결제 없음</small></span></button>'
+      +'<button class="taxi-option" data-x="payment" data-v="driver" aria-pressed="'+(tx.payment==="driver")+'"><span class="ico">👛</span><span class="tx"><b>기사님께 직접 결제</b><small>탑승 뒤 내는 방법 연습</small></span></button></div>'
+      +'<div class="taxi-fare"><span>연습용 예상 요금</span><b>'+won(taxiFare())+'</b></div>'
+      +'<button class="taxi-primary" data-x="pay">'+(tx.payment==="card"?'연습용 결제하고 호출하기':'현장 결제로 호출하기')+'</button>'
+      +'<button class="taxi-secondary" data-x="backVehicle">차량 다시 고르기</button>';
+  }else if(step==="dispatch"){
+    h+='<h1>택시가 오는 중입니다</h1><p>차량 위치가 지도에서 탑승 지점으로 움직입니다.</p>'
+      +'<div class="taxi-status"><span class="icon">🚕</span><span><b>'+(tx.vehicle==="wide"?'넓은 차량':'일반 택시')+' 배차 완료</b><small>연습용 차량 · <span id="taxiEta">도착까지 약 '+Math.max(1,Math.ceil((100-tx.progress)/25))+'분</span></small></span></div>'
+      +'<div class="taxi-progress"><i id="taxiProgress" style="width:'+tx.progress+'%"></i></div>'
+      +'<div class="taxi-route"><span><i></i><b>탑승 위치 · '+esc(tx.pickup.label)+'</b></span></div>';
+  }else{
+    h+='<h1>택시가 도착했습니다</h1><p>지도에서 고른 탑승 지점으로 연습용 택시가 왔습니다.</p>'
+      +'<div class="taxi-status"><span class="icon">🚕</span><span><b>탑승 위치 도착</b><small>'+esc(tx.pickup.label)+'</small></span></div>'
+      +(tx.missionPassed===false?'<p>이번 미션의 차량·결제 조건은 맞지 않았습니다. 다시 시도해 보세요.</p>':'<p>이번 실습을 마쳤습니다.</p>')
+      +'<button class="taxi-primary" data-x="restart">다시 연습하기</button>';
+  }
+  h+='<small class="taxi-note">지도 위치와 차량 이동·요금·결제는 연습용입니다. 실제 택시는 호출되지 않고 돈이 나가지 않습니다.</small></div></div>';
+  return h;
+}
+function taxiCarPoint(progress){
+  var p=S.tx.pickup, f=1-progress/100;
+  return [p.lat+0.004*f,p.lon-0.004*f];
+}
+function mountTaxiMap(){
+  var node=document.getElementById("taxiMap"); if(!node || !window.L) return;
+  var tx=S.tx, choosing=tx.step==="pickup"||tx.step==="destination";
+  var center=choosing?tx.center:tx.pickup;
+  taxiMap=L.map(node,{zoomControl:false,scrollWheelZoom:false}).setView([center.lat,center.lon],choosing?(tx.zoom||17):14);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,
+    attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap 기여자</a>'}).addTo(taxiMap);
+  L.control.zoom({position:"bottomleft"}).addTo(taxiMap);
+  if(choosing){
+    taxiMap.on("moveend",function(){
+      if(S.tx!==tx) return;
+      var p=taxiMap.getCenter(); tx.center={lat:p.lat,lon:p.lng}; tx.zoom=taxiMap.getZoom();
+      var label=document.getElementById("taxiCoord"); if(label) label.textContent=taxiCoord(tx.center);
+    });
+    taxiMap.on("click",function(e){ taxiMap.panTo(e.latlng); });
+  }else{
+    L.circleMarker([tx.pickup.lat,tx.pickup.lon],{radius:10,color:"#233345",fillColor:"#FFD15A",fillOpacity:1,weight:3}).addTo(taxiMap).bindTooltip("탈 곳");
+    L.circleMarker([tx.destination.lat,tx.destination.lon],{radius:10,color:"#fff",fillColor:"#2563D9",fillOpacity:1,weight:3}).addTo(taxiMap).bindTooltip("갈 곳");
+    L.polyline([[tx.pickup.lat,tx.pickup.lon],[tx.destination.lat,tx.destination.lon]],{color:"#3177EA",weight:5,dashArray:"8 6"}).addTo(taxiMap);
+    if(tx.step==="dispatch"||tx.step==="arrived"){
+      taxiCarMarker=L.marker(taxiCarPoint(tx.step==="arrived"?100:tx.progress),{
+        icon:L.divIcon({className:"",html:'<span class="taxi-car">🚕</span>',iconSize:[38,38],iconAnchor:[19,19]})
+      }).addTo(taxiMap);
+      taxiMap.fitBounds([taxiCarPoint(0),[tx.pickup.lat,tx.pickup.lon]],{padding:[55,55],maxZoom:16});
+    }else taxiMap.fitBounds([[tx.pickup.lat,tx.pickup.lon],[tx.destination.lat,tx.destination.lon]],{padding:[35,35],maxZoom:16});
+  }
+  setTimeout(function(){ if(taxiMap && node.isConnected) taxiMap.invalidateSize(); },80);
+}
+function taxiLocate(){
+  var tx=S.tx;
+  if(tx.locating) return;
+  if(!navigator.geolocation){ tx.gpsStatus="이 기기에서는 위치를 찾을 수 없습니다. 지도를 움직여 정해 주세요."; render(); return; }
+  tx.locating=true; tx.gpsStatus="현재 위치를 확인하고 있습니다."; render();
+  navigator.geolocation.getCurrentPosition(function(pos){
+    if(S.mode!=="taxi"||S.tx!==tx||tx.step!=="pickup") return;
+    tx.locating=false; tx.gpsUsed=true;
+    tx.center={lat:pos.coords.latitude,lon:pos.coords.longitude}; tx.zoom=18;
+    tx.gpsStatus="현재 위치를 찾았습니다. 지도에서 택시 아이콘을 움직여 탑승 지점을 세밀하게 맞춰 주세요.";
+    render();
+  },function(){
+    if(S.mode!=="taxi"||S.tx!==tx||tx.step!=="pickup") return;
+    tx.locating=false; tx.gpsStatus="위치를 확인하지 못했습니다. 지도를 움직여 탑승 지점을 직접 정해 주세요.";
+    render();
+  },{enableHighAccuracy:true,timeout:12000,maximumAge:0});
+}
+function taxiAct(btn){
+  var tx=S.tx, a=btn.getAttribute("data-x"), v=btn.getAttribute("data-v");
+  if(a==="locate"){ taxiLocate(); return; }
+  if(a==="pickup"){
+    tx.pickup={lat:tx.center.lat,lon:tx.center.lon,label:tx.pickupName.trim()||"지도에서 지정한 탑승 지점"};
+    tx.step="destination"; tx.zoom=16;
+  }else if(a==="destination"){
+    if(taxiDistance(tx.pickup,tx.center)<0.08){ toast("갈 곳을 탈 곳에서 조금 떨어진 위치로 옮겨 주세요."); return; }
+    tx.destination={lat:tx.center.lat,lon:tx.center.lon,label:tx.destinationName.trim()||"지도에서 지정한 목적지"};
+    tx.step="vehicle";
+  }else if(a==="vehicle") tx.vehicle=v;
+  else if(a==="payment") tx.payment=v;
+  else if(a==="nextPayment") tx.step="payment";
+  else if(a==="pay"){ tx.progress=0; tx.arrived=false; tx.step="dispatch"; }
+  else if(a==="backPickup"){ tx.step="pickup"; tx.center={lat:tx.pickup.lat,lon:tx.pickup.lon}; tx.zoom=17; }
+  else if(a==="backDestination"){ tx.step="destination"; tx.center={lat:tx.destination.lat,lon:tx.destination.lon}; tx.zoom=16; }
+  else if(a==="backVehicle") tx.step="vehicle";
+  else if(a==="restart"){ softReset(); }
+  render();
+}
+function startTaxiTimer(){
+  if(taxiTimer) return;
+  taxiTimer=setInterval(function(){
+    if(S.mode!=="taxi"||S.tx.step!=="dispatch"){stopTaxiTimer();return;}
+    S.tx.progress=Math.min(100,S.tx.progress+5);
+    if(taxiCarMarker) taxiCarMarker.setLatLng(taxiCarPoint(S.tx.progress));
+    var bar=document.getElementById("taxiProgress"); if(bar) bar.style.width=S.tx.progress+"%";
+    var time=document.getElementById("taxiEta"); if(time) time.textContent="도착까지 약 "+Math.max(1,Math.ceil((100-S.tx.progress)/25))+"분";
+    if(S.tx.progress>=100){
+      stopTaxiTimer(); S.tx.arrived=true; S.tx.step="arrived";
+      S.tx.missionPassed=!!finishCheck(); if(!S.tx.missionPassed) logFail();
+      render();
+    }
+  },900);
 }
 
 /* ===================== 테이블 오더 (호프집) ===================== */
@@ -4606,6 +4837,8 @@ function addCart(nm,pr,opts,q,base){
 
 /* ========== 키오스크 이벤트 ========== */
 function act(e){
+  var taxiBtn=e.target.closest("[data-x]");
+  if(taxiBtn){ taxiAct(taxiBtn); return; }
   var ob=e.target.closest("[data-o]");
   if(ob){ tableAct(ob); return; }
   var tb2=e.target.closest("[data-t]");
@@ -4845,6 +5078,7 @@ function softReset(){
   S.bk=freshBank(S.big);
   S.tr=freshTrain(S.big);
   S.tb=freshTable();
+  stopTaxiTimer(); S.tx=freshTaxi();
   UNDO=[]; AUTO=false; NOOP=0; IDLE=0; ATT=null;
   resetTimer();
 }
@@ -4869,6 +5103,7 @@ el.screen.addEventListener("click", function(e){
   var lb=e.target.closest("[data-l]");
   if(lb){ lobbyAct(lb); return; }
   if(S.mode==="lobby") return;
+  if(S.mode==="taxi" && e.target.closest("#taxiMap")) return;
   beginAttempt();
   var onPath=!!(HINT && e.target.closest(HINT));
   var before=snapState();
@@ -4947,7 +5182,8 @@ var LEVEL={
   snack:["기초","기초","기초","심화"],
   table:["기초","기초","심화","기초","심화","기초"],
   train:["기초","기초","심화","심화","기초","심화"],
-  bank:["기초","기초","심화","심화","심화","기초","기초"]
+  bank:["기초","기초","심화","심화","심화","기초","기초"],
+  taxi:["기초","심화"]
 };
 function lvOf(m,i){ return LEVEL[m]&&LEVEL[m][i]==="심화"?"어려움":"초보자용"; }
 /* 키오스크 미션이 찾아야 하는 메뉴 — 힌트가 정확한 메뉴와 탭을 가리키게 합니다 */
@@ -5043,14 +5279,14 @@ function makePlan(ds){
 /* --- 되돌리기 --- */
 function snapState(){
   return JSON.stringify({sc:S.screen,cat:S.cat,sv:S.serve,cart:S.cart,md:S.modal,pd:S.pending,sub:S.sub,
-    on:S.orderNo,bk:S.bk,tr:S.tr,tb:S.tb,to:S.timedout},function(k,v){ return k==="hold"?undefined:v; });
+    on:S.orderNo,bk:S.bk,tr:S.tr,tb:S.tb,tx:S.tx,to:S.timedout},function(k,v){ return k==="hold"?undefined:v; });
 }
 function undo(){
   if(S.mode==="lobby") return;
   if(!UNDO.length){ toast("처음 화면입니다. 더 뒤로 갈 곳이 없습니다."); return; }
   var o=JSON.parse(UNDO.pop()), hold=S.tr?S.tr.hold:0;
   S.screen=o.sc; S.cat=o.cat; S.serve=o.sv; S.cart=o.cart; S.modal=o.md; S.pending=o.pd; S.sub=o.sub;
-  S.orderNo=o.on; S.bk=o.bk; S.tr=o.tr; S.tb=o.tb; S.timedout=false; S.inserting=false;
+  S.orderNo=o.on; S.bk=o.bk; S.tr=o.tr; S.tb=o.tb; S.tx=o.tx||freshTaxi(); S.timedout=false; S.inserting=false;
   if(S.tr) S.tr.hold=hold||0;
   if(S.bk) S.bk.big=S.big; if(S.tr) S.tr.big=S.big;
   S.left=60; attStat("b",1); NOOP=0;
@@ -5568,6 +5804,11 @@ el.screen.addEventListener("change",function(e){
     S.demoProvider=e.target.value; S.demoError="";
     var top=el.screen.scrollTop; render(); el.screen.scrollTop=top;
   }
+});
+el.screen.addEventListener("input",function(e){
+  if(S.mode!=="taxi") return;
+  if(e.target.id==="taxiPickupName") S.tx.pickupName=e.target.value.slice(0,40);
+  if(e.target.id==="taxiDestinationName") S.tx.destinationName=e.target.value.slice(0,40);
 });
 
 /* 상태 보존 */
