@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="./icons/icon-192.png">
 <link rel="stylesheet" href="./vendor/leaflet/leaflet.css">
 <title>디지털 연습소</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Do+Hyeon&family=Gothic+A1:wght@400;500;700;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Do+Hyeon&family=Gothic+A1:wght@400;500;600;700;900&family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap">
 <style>body{margin:0}</style>
 </head>
 <body>
@@ -1658,6 +1658,40 @@ html:not([data-mode="lobby"]) .device{border-width:3px;border-radius:0;box-shado
 .lobby .lbrow .act{background:#e6edf7;color:var(--brand)}
 .lobby .lbrow.done .act{background:none;color:var(--ok2);padding:0;min-height:0}
 .lbsection .lbrow:focus-visible,.lbprimary .lbcta:focus-visible,.lbsummary button:focus-visible{outline:3px solid #d38a00;outline-offset:3px}
+/* 로비 학습 목록은 한 행 전체가 버튼입니다. 실제 실습 화면의 글씨는 그대로 둡니다. */
+.lbprimary h1{font-weight:700}
+.lbprimary .lbcta .tx b{font-weight:700}
+.lbprimary .lbcta .tx small{font-weight:500}
+.lbprimary ~ .lbsection .lbsec h2{font-size:calc(var(--lu)*21);font-weight:700;line-height:1.4;text-wrap:balance}
+.lbprimary ~ .lbsection .lbsec span{font-weight:500}
+.next-mission{margin:0 0 calc(var(--lu)*16);padding:calc(var(--lu)*14);border-left:4px solid var(--brand);background:#f2f5fa}
+.next-mission>span{display:block;font-size:calc(var(--lu)*16);font-weight:600;color:var(--brand)}
+.next-mission p{margin:calc(var(--lu)*6) 0 0;font-size:calc(var(--lu)*18);font-weight:500;line-height:1.6;text-wrap:pretty}
+.next-done{margin:0 0 calc(var(--lu)*16);font-size:calc(var(--lu)*17);font-weight:500;line-height:1.5}
+.practice-item{display:flex;flex-direction:column;align-items:flex-start;gap:calc(var(--lu)*8);width:100%;min-height:calc(var(--lu)*126);padding:calc(var(--lu)*18) 0;border-bottom:1px solid var(--k-line);background:#fff;color:var(--k-fg);text-align:left}
+.practice-item:last-child{border-bottom:0}
+.practice-meta{display:flex;flex-wrap:wrap;align-items:baseline;gap:calc(var(--lu)*5);font-size:calc(var(--lu)*16);line-height:1.5}
+.practice-meta .number{margin-right:calc(var(--lu)*6);font-variant-numeric:tabular-nums;color:var(--brand);font-weight:700}
+.practice-meta .place{font-weight:600}
+.practice-meta .level{font-weight:500;color:#526071}
+.practice-meta .completed{margin-left:calc(var(--lu)*6);color:var(--ok2);font-weight:600}
+.practice-desc{display:block;width:100%;font-size:calc(var(--lu)*18);font-weight:500;line-height:1.65;text-wrap:pretty;overflow-wrap:anywhere}
+.practice-item.done .practice-desc{color:#4f5c6a}
+.practice-action{display:inline-flex;align-items:center;gap:calc(var(--lu)*5);min-height:calc(var(--lu)*42);margin-top:calc(var(--lu)*3);color:var(--brand);font-size:calc(var(--lu)*16);font-weight:600}
+.practice-action svg{width:calc(var(--lu)*17);height:calc(var(--lu)*17)}
+.practice-item:focus-visible{outline:3px solid #d38a00;outline-offset:-3px}
+.summary-stats{display:grid;grid-template-columns:1fr;gap:calc(var(--lu)*10);padding-top:calc(var(--lu)*4)}
+.summary-stat{display:flex;flex-direction:column;gap:calc(var(--lu)*3);padding:calc(var(--lu)*14);background:#f3f6fa;border-radius:calc(var(--lu)*10)}
+.summary-stat .label{font-size:calc(var(--lu)*16);font-weight:600;color:#34465d}
+.summary-stat strong{font-size:calc(var(--lu)*26);font-weight:700;line-height:1.3;color:var(--brand);font-variant-numeric:tabular-nums}
+.summary-stat strong.pending{font-size:calc(var(--lu)*21)}
+.summary-stat strong small{font-size:calc(var(--lu)*16);font-weight:500;color:#526071}
+.summary-stat .explain{font-size:calc(var(--lu)*15);font-weight:400;line-height:1.55;color:#465466}
+.lbsummary .summary-link{font-weight:600}
+[data-mode="lobby"] .ctl{min-height:64px;font-size:clamp(14px,calc(var(--lu)*14),18px);font-weight:600;overflow-wrap:anywhere}
+[data-mode="lobby"] .ctl.wide{background:#0E1016;border-color:var(--shell-line);color:var(--shell-fg);font-size:clamp(14px,calc(var(--lu)*14),18px);font-weight:600}
+[data-mode="lobby"] .ctl.on{background:#294877;border-color:#6a9af0;color:#fff}
+@media(min-width:440px){.summary-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .tutorial-layer{position:fixed;inset:0;z-index:10000;pointer-events:none}
 .tutorial-shade{position:fixed;background:rgba(12,25,43,.7);pointer-events:auto}
 .tutorial-ring{position:fixed;box-sizing:border-box;border:3px solid #ffcb50;border-radius:12px;box-shadow:0 0 0 3px #fff,0 0 18px #ffcb50;pointer-events:none}
@@ -3608,9 +3642,14 @@ function lobbyBrandHTML(){
 function lobbySummaryHTML(weekOn){
   var org=demoInstitution();
   return '<div class="lbsection lbsummary"><div class="lbsec"><h2>나의 연습 기록</h2></div>'
-    +'<p>최근 7일 중 <b>'+weekOn+'일</b> 연습했어요.</p>'
-    +'<p>'+(org?'마일리지 <b>'+demoMileage().points+'점</b>이 쌓였어요.':'기관 로그인 후 연습하면 마일리지가 쌓여요.')+'</p>'
-    +'<button class="summary-link" data-l="lv" data-v="record">내 기록 보기</button>'
+    +'<div class="summary-stats">'
+      +'<div class="summary-stat"><span class="label">최근 7일 연습</span><strong>'+weekOn+'일 <small>/ 7일</small></strong>'
+        +'<span class="explain">최근 7일 중 '+weekOn+'일 연습했어요.</span></div>'
+      +'<div class="summary-stat"><span class="label">나의 마일리지</span>'
+        +(org?'<strong>'+demoMileage().points+'점</strong><span class="explain">연습을 이어가며 모은 점수예요.</span>'
+             :'<strong class="pending">적립 전</strong><span class="explain">기관 로그인 후부터 쌓여요.</span>')
+      +'</div></div>'
+    +'<button class="summary-link" data-l="lv" data-v="record">내 기록 자세히 보기</button>'
     +whoRow()+'</div>';
 }
 function vMileage(){
@@ -3648,29 +3687,32 @@ function vLobby(){
   var n=Math.min((DAILY.cleared||[]).length,3);
   var nx=nextTodo();
   var hasStamp=(DAILY.hist||[]).length>0;
+  var nextMission=nx?MISSIONS[nx.p.mode][nx.p.mi].t.replace(/<\/?b>/g,""):"";
 
   var cta = nx
     ? '<button class="lbcta" data-l="go" data-m="'+nx.p.mode+'" data-i="'+nx.p.mi+'">'
         +'<span class="pl">'+playSVG()+'</span>'
         +'<span class="tx"><b>오늘 연습 시작하기</b>'
-        +'<small>'+DATA[nx.p.mode].store+' · '+MODE_WHAT[nx.p.mode]+'</small></span>'
+        +'<small>위에 안내된 미션을 시작합니다</small></span>'
         +'<span class="cv">'+chevSVG()+'</span></button>'
     : '<button class="lbcta alldone" data-l="mode" data-m="cafe">'
         +'<span class="pl">'+checkSVG()+'</span>'
-        +'<span class="tx"><b>오늘 몫을 다 하셨습니다</b>'
-        +'<small>더 하고 싶으시면 가게를 고르세요</small></span>'
+        +'<span class="tx"><b>카페 연습 더 하기</b>'
+        +'<small>오늘의 세 가지 연습은 모두 마쳤어요</small></span>'
         +'<span class="cv">'+chevSVG()+'</span></button>';
 
   var tasks=(DAILY.plan||[]).map(function(pl,idx){
     if(!pl||!MISSIONS[pl.mode]) return '';
+    if(nx&&pl.mode===nx.p.mode&&pl.mi===nx.p.mi) return '';
     var key=pl.mode+":"+pl.mi, done=(DAILY.cleared||[]).indexOf(key)>-1;
     var txt=MISSIONS[pl.mode][pl.mi].t.replace(/<\/?b>/g,"");
     var lvv=lvOf(pl.mode,pl.mi);
-    return '<button class="lbrow'+(done?" done":"")+'" data-l="go" data-m="'+pl.mode+'" data-i="'+pl.mi+'">'
-      +'<span class="no">'+(done?checkSVG():(idx+1))+'</span>'
-      +'<span class="tx"><span class="md">'+DATA[pl.mode].store
-        +(pl.r?'<span class="lvtag rv">다시 해보기</span>':'<span class="lvtag'+(lvv==="어려움"?" adv":"")+'">'+lvv+'</span>')+'</span><b>'+txt+'</b></span>'
-      +'<span class="act">'+(done?'완료':'시작')+'</span></button>';
+    return '<button class="practice-item'+(done?' done':'')+'" data-l="go" data-m="'+pl.mode+'" data-i="'+pl.mi+'">'
+      +'<span class="practice-meta"><span class="number">'+String(idx+1).padStart(2,"0")+'</span>'
+        +'<span class="place">'+DATA[pl.mode].store+'</span><span class="level">· '+(pl.r?'다시 해보기':lvv)+'</span>'
+        +(done?'<span class="completed">완료</span>':'')+'</span>'
+      +'<span class="practice-desc">'+txt+'</span>'
+      +'<span class="practice-action">'+(done?'다시 연습하기':'연습 시작하기')+chevSVG()+'</span></button>';
   }).join("");
 
   var totalAll=0, doneAll=0;
@@ -3695,16 +3737,17 @@ function vLobby(){
       +'<p class="eyebrow">오늘의 학습</p>'
       +'<h1>'+(userName()?esc(userName())+'님, ':'')+'오늘도 연습해 볼까요?</h1>'
       +'<p class="progress">오늘의 연습 3개 중 '+n+'개를 완료했어요.</p>'
+      +(nx?'<div class="next-mission"><span>지금 할 연습 · '+DATA[nx.p.mode].store+'</span>'
+        +'<p>'+nextMission+'</p></div>':'<p class="next-done">오늘의 세 가지 연습을 모두 마쳤어요.</p>')
       +cta
     +'</div>'
     +'<div class="lbsection">'
-      +'<div class="lbsec"><h2>오늘 할 연습</h2><span>'+n+' / 3</span></div>'
-      +(n>=3?'<div class="lbdone">오늘 세 가지를 모두 마쳤습니다. 내일 또 오시면 '+((DAILY.streak||0)+1)+'일째가 됩니다.</div>':'')
+      +'<div class="lbsec"><h2>'+(nx?'다른 연습':'오늘의 연습 기록')+'</h2><span>'+n+' / 3 완료</span></div>'
       +tasks
     +'</div>'
 
-    +reviewSection()
     +lobbySummaryHTML(weekOn)
+    +reviewSection()
     +'<div class="lbsection">'
       +'<div class="lbsec"><h2>출석 달력</h2><span>최근 7일</span></div>'
       +(hasStamp?'':'<p class="lbempty">오늘 하나만 마치면 첫 도장이 찍힙니다.</p>')
@@ -3722,15 +3765,6 @@ function vLobby(){
                       :'<div class="vv none"><b>아직 없음</b></div>')+'</div>'
       +'</div>'
       +'<p class="unote">기관 로그인 후 7일 연속 출석하면 한 달에 한 번 100점을 적립해요. 매일 첫 미션 완료에는 50점을 적립해요.</p>'
-    +'</div>'
-    +'<div class="lbsection">'
-      +'<div class="lbsec"><h2>기록과 도움</h2><span>수업과 이어집니다</span></div>'
-      +'<button class="lbrow" data-l="lv" data-v="record"><span class="ico">'+CI("note")+'</span>'
-        +'<span class="tx"><b>오늘 연습 기록 보내기</b><small>노션에 붙여넣을 글을 만들어 드립니다</small></span>'
-        +'<span class="cv">'+chevSVG()+'</span></button>'
-      +'<button class="lbrow" data-l="lv" data-v="help"><span class="ico">'+CI("help")+'</span>'
-        +'<span class="tx"><b>막힐 때 보는 안내</b><small>막혔을 때 할 일 · 낯선 말 풀이</small></span>'
-        +'<span class="cv">'+chevSVG()+'</span></button>'
     +'</div>'
     +'<div class="lbsection">'
       +'<div class="lbsec"><h2>가게 골라서 연습</h2><span>'+doneAll+' / '+totalAll+'</span></div>'
@@ -3751,13 +3785,12 @@ function reviewSection(){
   var rv=reviewList().filter(function(r){ return !plan[r.mode+":"+r.mi]; }).slice(0,2);
   if(!rv.length) return '';
   return '<div class="lbsection">'
-    +'<div class="lbsec"><h2>지난번에 어려웠던 연습</h2><span>'+rv.length+'가지</span></div>'
+    +'<div class="lbsec"><h2>지난 연습 다시 해보기</h2><span>'+rv.length+'가지</span></div>'
     +rv.map(function(r){
-      return '<button class="lbrow" data-l="go" data-m="'+r.mode+'" data-i="'+r.mi+'">'
-        +'<span class="dot">'+MODE_SHORT[r.mode]+'</span>'
-        +'<span class="tx"><span class="md">'+DATA[r.mode].store+'<span class="lvtag rv">다시 해보기</span></span>'
-        +'<b>'+MISSIONS[r.mode][r.mi].t.replace(/<\/?b>/g,"")+'</b></span>'
-        +'<span class="act">시작</span></button>';
+      return '<button class="practice-item" data-l="go" data-m="'+r.mode+'" data-i="'+r.mi+'">'
+        +'<span class="practice-meta"><span class="place">'+DATA[r.mode].store+'</span><span class="level">· 다시 해보기</span></span>'
+        +'<span class="practice-desc">'+MISSIONS[r.mode][r.mi].t.replace(/<\/?b>/g,"")+'</span>'
+        +'<span class="practice-action">다시 연습하기'+chevSVG()+'</span></button>';
     }).join("")
   +'</div>';
 }
@@ -5475,12 +5508,13 @@ function CI(n){ return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColo
 function paintControls(){
   var row=document.getElementById("ctlrow"); if(!row) return;
   if(S.mode==="lobby"){
+    var lobbyCurrent=["home","class","user","mileage"].indexOf(S.lv)>-1;
     row.innerHTML=
-       '<button class="ctl'+(S.lv==="home"?" on":"")+'" data-c="lobby">'+CI("home")+'로비</button>'
-      +'<button class="ctl'+(S.lv==="record"?" on":"")+'" data-c="record">'+CI("note")+'오늘 기록</button>'
+       '<button class="ctl'+(lobbyCurrent?" on":"")+'" data-c="lobby"'+(lobbyCurrent?' aria-current="page"':'')+'>'+CI("home")+'로비</button>'
+      +'<button class="ctl'+(S.lv==="record"?" on":"")+'" data-c="record"'+(S.lv==="record"?' aria-current="page"':'')+'>'+CI("note")+'오늘 기록</button>'
       +'<button class="ctl wide" data-c="picker">'+CI("store")+'가게 고르기</button>'
-      +'<button class="ctl'+(S.lv==="help"?" on":"")+'" data-c="help">'+CI("help")+'막힐 때</button>'
-      +'<button class="ctl'+(S.lv==="map"?" on":"")+'" data-c="map">'+CI("map")+'지도</button>';
+      +'<button class="ctl'+(S.lv==="help"?" on":"")+'" data-c="help"'+(S.lv==="help"?' aria-current="page"':'')+'>'+CI("help")+'막힐 때</button>'
+      +'<button class="ctl'+(S.lv==="map"?" on":"")+'" data-c="map"'+(S.lv==="map"?' aria-current="page"':'')+'>'+CI("map")+'지도</button>';
     return;
   }
   row.innerHTML=
