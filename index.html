@@ -1636,6 +1636,28 @@ html:not([data-mode="lobby"]) .device{border-width:3px;border-radius:0;box-shado
 .taxi-progress{height:8px;margin:0 0 11px;border-radius:99px;background:#E3E9F1;overflow:hidden}.taxi-progress i{display:block;height:100%;background:#3177EA;transition:width .7s linear}
 .taxi-note{display:block;margin-top:8px;font-size:12px;line-height:1.45;color:#647182}
 @media(max-height:690px){.taxi-map-wrap{min-height:185px}.taxi-sheet{padding-top:11px;padding-bottom:12px}.taxi-sheet h1{font-size:20px}.taxi-option{min-height:54px}}
+/* 로비: 오늘의 행동을 먼저 보여 주고 기록은 한 단계 낮춰 배치합니다. */
+.lbhead{padding-bottom:calc(var(--lu)*16)}
+.lbprimary{margin-top:calc(var(--lu)*12);padding:calc(var(--lu)*20) calc(var(--lu)*16);background:#fff}
+.lbprimary .eyebrow{margin:0 0 calc(var(--lu)*7);color:var(--brand);font-size:calc(var(--lu)*15);font-weight:800}
+.lbprimary h1{margin:0;font-family:var(--font-k);font-size:calc(var(--lu)*27);font-weight:800;line-height:1.35;text-wrap:balance}
+.lbprimary .progress{margin:calc(var(--lu)*10) 0 calc(var(--lu)*18);font-size:calc(var(--lu)*17);line-height:1.5;color:#344153;font-variant-numeric:tabular-nums;text-wrap:pretty}
+.lbprimary .lbcta{min-height:calc(var(--lu)*84);background:var(--brand);color:#fff;box-shadow:none}
+.lbprimary .lbcta .pl{background:#fff;color:var(--brand)}
+.lbprimary .lbcta .tx small,.lbprimary .lbcta .cv{color:#fff}
+.lbprimary .lbcta.alldone{background:#255b40}
+.lbsummary .lbsec{margin-bottom:calc(var(--lu)*10)}
+.lbsummary p{margin:calc(var(--lu)*7) 0;font-size:calc(var(--lu)*17);line-height:1.55;text-wrap:pretty}
+.lbsummary p b{font-variant-numeric:tabular-nums}
+.lbsummary .summary-link{display:block;width:100%;min-height:calc(var(--lu)*52);margin-top:calc(var(--lu)*13);padding:calc(var(--lu)*10);border:2px solid var(--brand);border-radius:calc(var(--lu)*10);background:#fff;color:var(--brand);font-size:calc(var(--lu)*17);font-weight:800;text-align:center}
+.lbsummary .lbwho{margin:calc(var(--lu)*14) 0 calc(var(--lu)*9);background:#f3f6fa;border:1px solid var(--k-line2);color:var(--k-fg)}
+.lbsummary .lbwho .ic{background:#e3ebf6;color:var(--brand)}
+.lbsummary .lbwho .tx small{color:#465466}
+.lbsummary .lbwho .ch{background:#fff;border:1px solid var(--brand)}
+.lobby .lbrow .dot{background:#e6edf7;color:var(--brand)}
+.lobby .lbrow .act{background:#e6edf7;color:var(--brand)}
+.lobby .lbrow.done .act{background:none;color:var(--ok2)}
+.lbsection .lbrow:focus-visible,.lbprimary .lbcta:focus-visible,.lbsummary button:focus-visible{outline:3px solid #d38a00;outline-offset:3px}
 .tutorial-layer{position:fixed;inset:0;z-index:10000;pointer-events:none}
 .tutorial-shade{position:fixed;background:rgba(12,25,43,.7);pointer-events:auto}
 .tutorial-ring{position:fixed;box-sizing:border-box;border:3px solid #ffcb50;border-radius:12px;box-shadow:0 0 0 3px #fff,0 0 18px #ffcb50;pointer-events:none}
@@ -3583,16 +3605,13 @@ function lobbyBrandHTML(){
     +esc(org.name)+'</small>디지털 연습소</span></span>';
   return '<span class="tagx">'+(userOrg()?esc(userOrg())+' · ':'')+'디지털 연습소</span>';
 }
-function mileagePreviewHTML(){
+function lobbySummaryHTML(weekOn){
   var org=demoInstitution();
-  if(!org) return '<div class="lbsection"><div class="lbsec"><h2>마일리지</h2><span>기관 로그인 후 적립</span></div>'
-    +'<p class="uask">손님으로도 연습과 출석을 이용할 수 있습니다. 기관 로그인 후 하루 첫 미션 완료에 50P, 7일 연속 출석에 월 1회 100P가 쌓입니다.</p>'
-    +'<button class="uplain" data-l="lv" data-v="user">기관 로그인</button></div>';
-  var points=demoMileage().points;
-  return '<div class="lbsection"><div class="lbsec"><h2>내 마일리지</h2><span>적립 현황</span></div>'
-    +'<div class="mileage-total">'+points+'<small>P</small></div>'
-    +'<p class="unote">하루 첫 미션 완료 +50P · 7일 연속 출석 +100P (월 1회)</p>'
-    +'<button class="uplain" data-l="lv" data-v="mileage">적립 내역과 혜택 예시 보기</button></div>';
+  return '<div class="lbsection lbsummary"><div class="lbsec"><h2>나의 연습 기록</h2></div>'
+    +'<p>최근 7일 중 <b>'+weekOn+'일</b> 연습했어요.</p>'
+    +'<p>'+(org?'마일리지 <b>'+demoMileage().points+'점</b>이 쌓였어요.':'기관 로그인 후 연습하면 마일리지가 쌓여요.')+'</p>'
+    +'<button class="summary-link" data-l="lv" data-v="record">내 기록 보기</button>'
+    +whoRow()+'</div>';
 }
 function vMileage(){
   var org=demoInstitution();
@@ -3659,7 +3678,7 @@ function vLobby(){
     var total=MISSIONS[m].length, c=clearedCount(m);
     totalAll+=total; doneAll+=c;
     return '<button class="lbrow" data-l="mode" data-m="'+m+'">'
-      +'<span class="dot" style="background:'+MODE_COLOR[m]+'">'+MODE_SHORT[m]+'</span>'
+      +'<span class="dot">'+MODE_SHORT[m]+'</span>'
       +'<span class="tx"><span class="md">'+MODE_WHAT[m]+'</span><b>'+DATA[m].store+'</b></span>'
       +'<span class="ct'+(c>=total?" full":"")+'">'+c+'/'+total+'</span>'
       +'<span class="cv">'+chevSVG()+'</span></button>';
@@ -3671,31 +3690,13 @@ function vLobby(){
         +'<button class="lbbigbtn" data-l="big" aria-pressed="'+(S.big?"true":"false")+'">글씨 크게</button></div>'
       +'<div class="dtrow"><div class="dt">'+(now.getMonth()+1)+'월 '+now.getDate()+'일 '+W[now.getDay()]+'요일</div>'
         +'<button class="lbcls" data-l="lv" data-v="class">'+S.cls+' <small>바꾸기</small></button></div>'
-      +'<h1>'+(userName()? esc(userName())+'님,<br>오늘도 한 가지씩' : '오늘도 한 가지씩')+'</h1>'
+    +'</div>'
+    +'<div class="lbprimary">'
+      +'<p class="eyebrow">오늘의 학습</p>'
+      +'<h1>'+(userName()?esc(userName())+'님, ':'')+'오늘도 연습해 볼까요?</h1>'
+      +'<p class="progress">오늘의 연습 3개 중 '+n+'개를 완료했어요.</p>'
       +cta
-      +whoRow()
     +'</div>'
-
-    +mileagePreviewHTML()
-    +'<div class="lbsection">'
-      +'<div class="lbsec"><h2>출석부</h2><span>이번 주 '+weekOn+'일</span></div>'
-      +(hasStamp?'':'<p class="lbempty">오늘 하나만 마치면 첫 도장이 찍힙니다.</p>')
-      +'<div class="lbgrid">'+days.map(function(d){
-        return '<span class="lbcell'+(d.today?" today":"")+'">'
-          +'<span class="w">'+d.w+'</span>'
-          +(d.on?'<span class="stamp">출석</span>':'<span class="blank"></span>')
-          +'<span class="n">'+d.d+'</span></span>';}).join("")+'</div>'
-      +'<div class="lbstreak">'
-        +'<div><div class="lb">이어서 나온 날</div>'
-          +(DAILY.streak?'<div class="vv"><b>'+DAILY.streak+'</b><span>일째</span></div>'
-                         :'<div class="vv none"><b>아직 없음</b></div>')+'</div>'
-        +'<div><div class="lb">가장 길었던 기록</div>'
-          +(DAILY.best?'<div class="vv"><b>'+DAILY.best+'</b><span>일</span></div>'
-                      :'<div class="vv none"><b>아직 없음</b></div>')+'</div>'
-      +'</div>'
-      +'<p class="unote">7일 연속 출석 +100P (월 1회) · 로그인한 기관 체험 계정에 적립</p>'
-    +'</div>'
-
     +'<div class="lbsection">'
       +'<div class="lbsec"><h2>오늘 할 연습</h2><span>'+n+' / 3</span></div>'
       +(n>=3?'<div class="lbdone">오늘 세 가지를 모두 마쳤습니다. 내일 또 오시면 '+((DAILY.streak||0)+1)+'일째가 됩니다.</div>':'')
@@ -3703,6 +3704,25 @@ function vLobby(){
     +'</div>'
 
     +reviewSection()
+    +lobbySummaryHTML(weekOn)
+    +'<div class="lbsection">'
+      +'<div class="lbsec"><h2>출석 달력</h2><span>최근 7일</span></div>'
+      +(hasStamp?'':'<p class="lbempty">오늘 하나만 마치면 첫 도장이 찍힙니다.</p>')
+      +'<div class="lbgrid">'+days.map(function(d){
+        return '<span class="lbcell'+(d.today?" today":"")+'">'
+          +'<span class="w">'+d.w+'</span>'
+          +(d.on?'<span class="stamp">출석</span>':'<span class="blank"></span>')
+          +'<span class="n">'+d.d+'</span></span>';}).join("")+'</div>'
+      +'<div class="lbstreak">'
+        +'<div><div class="lb">연속으로 연습한 날</div>'
+          +(DAILY.streak?'<div class="vv"><b>'+DAILY.streak+'</b><span>일째 연습했어요</span></div>'
+                         :'<div class="vv none"><b>아직 없음</b></div>')+'</div>'
+        +'<div><div class="lb">가장 길었던 기록</div>'
+          +(DAILY.best?'<div class="vv"><b>'+DAILY.best+'</b><span>일 연속 연습</span></div>'
+                      :'<div class="vv none"><b>아직 없음</b></div>')+'</div>'
+      +'</div>'
+      +'<p class="unote">기관 로그인 후 7일 연속 출석하면 한 달에 한 번 100점을 적립해요. 매일 첫 미션 완료에는 50점을 적립해요.</p>'
+    +'</div>'
     +'<div class="lbsection">'
       +'<div class="lbsec"><h2>기록과 도움</h2><span>수업과 이어집니다</span></div>'
       +'<button class="lbrow" data-l="lv" data-v="record"><span class="ico">'+CI("note")+'</span>'
@@ -3734,7 +3754,7 @@ function reviewSection(){
     +'<div class="lbsec"><h2>지난번에 어려웠던 연습</h2><span>'+rv.length+'가지</span></div>'
     +rv.map(function(r){
       return '<button class="lbrow" data-l="go" data-m="'+r.mode+'" data-i="'+r.mi+'">'
-        +'<span class="dot" style="background:'+MODE_COLOR[r.mode]+'">'+MODE_SHORT[r.mode]+'</span>'
+        +'<span class="dot">'+MODE_SHORT[r.mode]+'</span>'
         +'<span class="tx"><span class="md">'+DATA[r.mode].store+'<span class="lvtag rv">다시 해보기</span></span>'
         +'<b>'+MISSIONS[r.mode][r.mi].t.replace(/<\/?b>/g,"")+'</b></span>'
         +'<span class="act">시작</span></button>';
