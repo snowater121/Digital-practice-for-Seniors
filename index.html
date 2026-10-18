@@ -3820,9 +3820,10 @@ function lobbyScrollHint(){
 }
 
 /* ===================== 모바일 택시 연습 ===================== */
-var taxiMap=null, taxiMapKind=null, taxiCarMarker=null, taxiOverlays=[], taxiTimer=null, taxiMountToken=0, taxiPracticeLayer=null;
+var taxiMap=null, taxiMapKind=null, taxiCarMarker=null, taxiOverlays=[], taxiTimer=null, taxiTileTimer=null, taxiMountToken=0, taxiPracticeLayer=null;
 function clearTaxiMap(){
   taxiMountToken++;
+  if(taxiTileTimer){ clearTimeout(taxiTileTimer); taxiTileTimer=null; }
   if(taxiMap){
     if(taxiMapKind==="naver"){
       taxiOverlays.forEach(function(overlay){ overlay.setMap(null); });
@@ -3962,7 +3963,20 @@ function mountTaxiNaver(node){
   var center=choosing?tx.center:tx.pickup;
   var map=new naver.maps.Map(node,{center:taxiNaverPoint(center),zoom:choosing?(tx.zoom||17):14,
     zoomControl:true,scrollWheel:false,gl:false});
-  taxiMap=map; taxiMapKind="naver"; taxiMapStatus("네이버 지도를 사용 중입니다.");
+  taxiMap=map; taxiMapKind="naver";
+  taxiMapStatus("네이버 지도 화면을 불러오는 중입니다.");
+  taxiMapNotice("지도를 불러오는 중입니다.");
+  taxiTileTimer=setTimeout(function(){
+    if(taxiMap!==map || !node.isConnected) return;
+    clearTaxiMap();
+    if(node.isConnected) mountTaxiFallback(node);
+  },8000);
+  naver.maps.Event.addListener(map,"tilesloaded",function(){
+    if(taxiMap!==map || !node.isConnected) return;
+    if(taxiTileTimer){ clearTimeout(taxiTileTimer); taxiTileTimer=null; }
+    taxiMapStatus("네이버 지도를 사용 중입니다.");
+    taxiMapNotice("");
+  });
   if(choosing){
     naver.maps.Event.addListener(map,"idle",function(){
       if(taxiMap!==map || S.tx!==tx) return;
