@@ -130,7 +130,7 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 .mission .swap{font-size:11px;color:var(--shell-mut);text-decoration:underline;flex:none;padding:2px}
 
 /* ===== device ===== */
-.stage{flex:1;min-height:0;padding:10px 12px;display:flex}
+.stage{flex:1;min-height:0;padding:10px 12px;display:flex;position:relative}
 .device{
   flex:1;min-height:0;position:relative;border-radius:14px;overflow:hidden;
   border:6px solid #050608;box-shadow:0 0 0 1px #2A2F3A, 0 14px 34px rgba(0,0,0,.6);
@@ -1553,27 +1553,22 @@ html:not([data-mode="lobby"]) .practicebar{display:flex}
   border-radius:8px;color:#fff;background:#24344B;font-size:14px;font-weight:700;line-height:1.3}
 .practice-tool small{display:block;font-size:12px;color:#fff}
 .practice-tool[aria-pressed="true"]{background:#39609F}
-.mission-pin{flex:none;margin:8px 10px 0;padding:10px 12px;border:2px solid #1A3D7C;
-  border-radius:10px;background:#FFFDF3;color:#1A1D23;box-shadow:0 3px 12px #0003}
+.mission-pin{position:absolute;top:10px;right:10px;z-index:30;width:auto;max-width:calc(100% - 20px);
+  padding:4px;border:1px solid #D2DBE7;border-radius:12px;background:#fff;color:#1A1D23;box-shadow:0 4px 16px #0004}
 .mission-pin[hidden]{display:none}
-.mission-pin strong{display:block;font-size:14px;color:#1A3D7C}
-.mission-pin p{max-height:18dvh;overflow-y:auto;margin:4px 0 0;font-size:17px;line-height:1.5}
-.mission-pin button{min-height:44px;margin-top:6px;padding:5px 12px;border:1px solid #1A3D7C;
-  border-radius:7px;background:#fff;color:#1A3D7C;font:inherit;font-size:14px;font-weight:700}
+.mission-pin.expanded{width:min(310px,calc(100% - 20px))}
+.mission-pin #btnMission{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px;width:100%;padding:8px 10px;
+  color:#1A3D7C;font-size:14px;font-weight:800;text-align:left}
+.mission-pin #btnMission:after{content:'⌄';font-size:20px;line-height:1}
+.mission-pin.expanded #btnMission:after{content:'⌃'}
+.mission-pin-body{padding:2px 10px 10px;border-top:1px solid #E1E7EF}
+.mission-pin-body[hidden]{display:none}
+.mission-pin p{max-height:18dvh;overflow-y:auto;margin:9px 0 8px;font-size:16px;line-height:1.5}
+.mission-pin-body #missionChange{min-height:40px;padding:6px 10px;border:1px solid #1A3D7C;
+  border-radius:7px;background:#fff;color:#1A3D7C;font-size:14px;font-weight:700}
 html:not([data-mode="lobby"]) .stage{padding:0}
 html:not([data-mode="lobby"]) .device{border-width:3px;border-radius:0;box-shadow:none}
 .app:fullscreen{max-width:none;width:100%;height:100dvh}
-.mission-layer{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
-.mission-layer[hidden]{display:none}
-.mission-shade{position:absolute;inset:0;background:rgba(0,0,0,.7)}
-.mission-card{position:relative;z-index:1;width:min(100%,460px);max-height:90dvh;overflow:auto;
-  background:#fff;color:#1A1D23;border-radius:14px;padding:24px;box-shadow:0 12px 32px rgba(0,0,0,.3)}
-.mission-card h2{font-size:22px;margin:0 0 14px}
-.mission-card p{font-size:19px;line-height:1.65;margin:0 0 20px}
-.mission-actions{display:flex;gap:8px}
-.mission-actions button{flex:1;min-height:52px;border:2px solid #1A3D7C;border-radius:9px;
-  font-size:16px;font-weight:700;color:#1A3D7C}
-.mission-actions button:last-child{background:#1A3D7C;color:#fff}
 .map-intro{padding:20px 16px;font-size:17px;line-height:1.6}
 .map-intro h2{font-size:25px;margin:0 0 8px}
 .map-intro p{margin:0 0 16px}
@@ -1607,18 +1602,50 @@ html:not([data-mode="lobby"]) .device{border-width:3px;border-radius:0;box-shado
 .install-box p{margin:6px 0 0}
 .install-box button{min-height:48px;padding:8px 16px;background:#1A3D7C;color:#fff;border-radius:8px;font-size:16px}
 .taxi-app{height:100%;min-height:100%;display:flex;flex-direction:column;background:#F5F6FA;color:#20242B;font-family:'Noto Sans KR',sans-serif}
+.taxi-home{min-height:100%;background:#F4F5F7;color:#242933;display:flex;flex-direction:column}
+.taxi-home-head{background:#fff;padding:18px 18px 22px}
+.taxi-home-head h1{font-size:22px;margin:0 0 20px;font-weight:900}
+.taxi-search{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:76px;padding:16px 18px;border:2px solid #377CF1;border-radius:20px;background:#fff;text-align:left;color:#59616D;font-size:25px;font-weight:900}
+.taxi-search span:last-child{font-size:20px;color:#3073E7}
+.taxi-home-main{padding:18px 16px 20px;background:#fff;border-radius:0 0 22px 22px}
+.taxi-home-tabs{display:flex;gap:28px;border-bottom:1px solid #DEE2E9;white-space:nowrap;overflow-x:auto}
+.taxi-home-tabs strong{padding:4px 1px 14px;border-bottom:3px solid #2774ED;color:#246DDD;font-size:19px}
+.taxi-home-tabs span{padding:4px 1px 14px;color:#59616D;font-size:19px;font-weight:700}
+.taxi-service-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:24px 0 8px}
+.taxi-service{display:flex;flex-direction:column;align-items:center;gap:8px;min-height:110px;padding:15px 8px;border-radius:16px;background:#F2F6FC;color:#232B38;font-size:17px;font-weight:800}
+.taxi-service .icon{font-size:36px;line-height:1.2}
+.taxi-service-note{margin:12px 2px 0;color:#586576;font-size:14px;line-height:1.5}
+.taxi-home-recent{margin:16px 0 0;padding:20px 18px;background:#fff;border-radius:20px}
+.taxi-home-recent h2{font-size:20px;margin:0 0 12px}
+.taxi-home-recent button{width:100%;min-height:52px;padding:10px 14px;border:1px solid #D6DCE5;border-radius:12px;text-align:left;color:#234681;font-size:16px;font-weight:800}
+.taxi-home-recent p{color:#5C6674;font-size:14px;line-height:1.5}
 .taxi-head{flex:none;display:flex;align-items:center;gap:10px;min-height:56px;padding:10px 16px;background:#FFD15A;color:#1F2937}
 .taxi-brand{display:flex;align-items:center;gap:8px;font-size:19px;font-weight:900;letter-spacing:-.03em}
 .taxi-brand i{display:grid;place-items:center;width:27px;height:27px;border-radius:6px;background:#213E80;color:#FFD15A;font-style:normal;font-size:17px}
 .taxi-head small{margin-left:auto;font-size:12px;font-weight:800}
 .taxi-map-wrap{position:relative;flex:1;min-height:250px;background:#DDE5E5;overflow:hidden}
 .taxi-map{position:absolute;inset:0;z-index:0}
+.taxi-map.practice-map{background:#DCE9F0}
+.taxi-practice-label{display:block;width:max-content;padding:4px 6px;border:1px solid #C5D4DD;border-radius:4px;background:#fff;color:#506274;font-size:12px;font-weight:800;white-space:nowrap;box-shadow:0 1px 3px #0002}
+.taxi-map-back{position:absolute;left:14px;top:14px;z-index:500;width:52px;height:52px;border-radius:50%;background:#fff;box-shadow:0 3px 12px #0003;color:#273443;font-size:26px}
+.taxi-map-notice{position:absolute;z-index:490;left:12px;right:12px;top:76px;padding:12px 14px;border-radius:12px;background:#fff;box-shadow:0 3px 12px #0003;color:#314057;font-size:14px;line-height:1.45}
+.taxi-map-notice.practice{left:auto;right:12px;top:76px;max-width:210px;padding:6px 10px;font-size:12px;font-weight:800}
+.taxi-map-notice[hidden]{display:none}
 .taxi-map-pin{position:absolute;left:50%;top:50%;z-index:400;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;pointer-events:none;filter:drop-shadow(0 3px 5px #0005)}
 .taxi-map-pin b{display:grid;place-items:center;width:47px;height:47px;border-radius:50%;border:3px solid #fff;background:#FFD15A;font-size:24px}
+.taxi-map-pin.pickup b{width:23px;height:23px;background:#2775E8;border:4px solid #fff;font-size:0}
+.taxi-map-pin.pickup:before{content:'출발';display:grid;place-items:center;min-width:64px;height:38px;margin-bottom:6px;border-radius:5px;background:#27292E;color:#fff;font-size:17px;font-weight:900}
 .taxi-map-pin.dest b{background:#2563D9;color:#fff;font-size:25px}
 .taxi-map-pin:after{content:"";width:4px;height:19px;background:#243347;border-radius:3px}
-.taxi-map-caption{position:absolute;z-index:400;left:12px;top:12px;max-width:calc(100% - 24px);padding:9px 12px;border-radius:9px;background:#fff;box-shadow:0 2px 10px #0002;font-size:14px;font-weight:800;line-height:1.4}
+.taxi-map-caption{position:absolute;z-index:400;left:78px;top:18px;max-width:calc(100% - 90px);padding:9px 12px;border-radius:9px;background:#fff;box-shadow:0 2px 10px #0002;font-size:14px;font-weight:800;line-height:1.4}
 .taxi-locate{position:absolute;right:12px;bottom:16px;z-index:400;min-height:48px;padding:8px 13px;border-radius:999px;background:#fff;color:#173A7C;box-shadow:0 2px 9px #0003;font-size:14px;font-weight:900}
+.taxi-place-row{display:flex;align-items:center;gap:12px;width:100%;min-height:58px;padding:12px 3px;border-bottom:1px solid #E3E7ED;text-align:left;color:#253044;font-size:17px}
+.taxi-place-row .dot{flex:none;width:9px;height:9px;border-radius:50%;background:#2873E8}
+.taxi-place-row.destination .dot{background:#D83742}
+.taxi-place-row.destination{color:#737D8B}
+.taxi-place-row span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.taxi-quick{display:flex;gap:8px;overflow-x:auto;margin:12px 0 16px}
+.taxi-quick button{flex:none;min-height:42px;padding:8px 14px;border-radius:999px;background:#F2F4F7;color:#2D3542;font-size:15px;font-weight:700}
 .taxi-map .leaflet-control-attribution{font-size:10px}
 .taxi-map-marker{display:grid;place-items:center;width:40px;height:40px;box-sizing:border-box;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px #0005;color:#20304E;font-size:12px;font-weight:900;white-space:nowrap}
 .taxi-car{display:grid;place-items:center;width:38px;height:38px;border:3px solid #fff;border-radius:50%;background:#FFD15A;box-shadow:0 2px 9px #0004;font-size:19px}
@@ -1684,14 +1711,8 @@ html:not([data-mode="lobby"]) .device{border-width:3px;border-radius:0;box-shado
   </div>
 
   <div class="practicebar" id="practicebar">
-    <button class="practice-tool" id="btnMission" aria-haspopup="dialog">오늘 미션 보기</button>
     <button class="practice-tool" id="btnFull" aria-label="전체화면으로 보기">전체화면</button>
     <button class="practice-tool" id="btnTimer" aria-pressed="true">시간제한 <small>켜짐</small></button>
-  </div>
-
-  <div class="mission-pin" id="missionPin" role="note" hidden>
-    <strong>이번 미션</strong><p id="missionPinText"></p>
-    <button id="missionPinExpand">미션 크게 보기</button>
   </div>
 
   <div class="stage">
@@ -1699,22 +1720,18 @@ html:not([data-mode="lobby"]) .device{border-width:3px;border-radius:0;box-shado
       <div class="timeout" id="tbar"><i id="tfill"></i></div>
       <div class="screen" id="screen"></div>
     </div>
+    <div class="mission-pin" id="missionPin" hidden>
+      <button id="btnMission" aria-expanded="false" aria-controls="missionPinBody">미션 다시 보기</button>
+      <div class="mission-pin-body" id="missionPinBody" hidden>
+        <p id="missionPinText"></p>
+        <button id="missionChange">다른 미션</button>
+      </div>
+    </div>
   </div>
 
   <div class="controls">
     <div class="ctlrow" id="ctlrow"></div>
   </div>
-<div class="mission-layer" id="missionLayer" hidden>
-  <div class="mission-shade" data-mission-close="1"></div>
-  <div class="mission-card" role="dialog" aria-modal="true" aria-labelledby="missionTitle">
-    <h2 id="missionTitle">이번 연습 미션</h2>
-    <p id="missionPopupText"></p>
-    <div class="mission-actions">
-      <button id="missionChange">다른 미션</button>
-      <button id="missionClose">연습 시작하기</button>
-    </div>
-  </div>
-</div>
 </div>
 
 <script src="./vendor/leaflet/leaflet.js"></script>
@@ -2122,7 +2139,7 @@ function shuffled10(){
   return a;
 }
 function freshTaxi(){
-  return {step:"pickup",center:{lat:37.5665,lon:126.978},pickup:null,destination:null,
+  return {step:"home",center:{lat:37.5665,lon:126.978},pickup:null,destination:null,
     pickupName:"",destinationName:"",gpsStatus:"",gpsUsed:false,locating:false,
     vehicle:"standard",payment:"card",progress:0,arrived:false};
 }
@@ -2404,14 +2421,15 @@ function startTick(){
 
 /* ========== 렌더 ========== */
 function paintMission(){
-  var layer=document.getElementById("missionLayer");
-  var show=S.mode!=="lobby" && S.missionOpen;
-  layer.hidden=!show;
   var pin=document.getElementById("missionPin");
-  pin.hidden=S.mode==="lobby" || S.cls!=="초보자용";
-  if(!pin.hidden) document.getElementById("missionPinText").innerHTML=curMission().t;
-  if(show){ document.getElementById("missionPopupText").innerHTML=curMission().t;
-    document.getElementById("missionClose").focus(); }
+  pin.hidden=S.mode==="lobby";
+  if(pin.hidden) return;
+  var expanded=!!S.missionOpen;
+  pin.classList.toggle("expanded",expanded);
+  document.getElementById("btnMission").setAttribute("aria-expanded",String(expanded));
+  document.getElementById("btnMission").textContent=expanded?"미션 접기":"미션 다시 보기";
+  document.getElementById("missionPinBody").hidden=!expanded;
+  document.getElementById("missionPinText").innerHTML=curMission().t;
 }
 function closeMission(){ S.missionOpen=false; paintMission(); el.tbar.hidden=!timerVisible(); }
 function render(){
@@ -3467,12 +3485,18 @@ window.navermap_authFailure=function(){
 };
 function mountFallbackMap(node){
   var note=document.getElementById("mapMessage");
-  if(note) note.textContent="네이버 지도 인증 또는 연결에 실패해 기본 지도를 표시합니다. 네이버 클라우드의 Web 서비스 URL을 확인해 주세요.";
+  if(note) note.textContent=location.protocol==="file:"
+    ?"파일 미리보기에서는 네이버 지도 인증이 제한될 수 있어 기본 지도를 표시합니다. 공개 HTTPS 주소에서 네이버 지도를 확인해 주세요."
+    :"네이버 지도 인증 또는 연결에 실패해 기본 지도를 표시합니다. 네이버 클라우드의 Web 서비스 URL을 확인해 주세요.";
   if(!window.L){ node.textContent="지도를 불러오지 못했습니다. 인터넷 연결을 확인해 주세요."; return; }
   var m=S.map, located=m.lat!=null && m.lon!=null;
   var map=L.map(node,{scrollWheelZoom:false}).setView(located?[m.lat,m.lon]:[36.35,127.8],located?16:7);
+  var failedTiles=0;
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
     maxZoom:19, attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap 기여자</a>'
+  }).on("tileerror",function(){
+    failedTiles++;
+    if(failedTiles>=3 && note) note.textContent="지도 이미지를 불러오지 못했습니다. 인터넷 연결을 확인하고 공개 HTTPS 주소에서 다시 열어 주세요.";
   }).addTo(map);
   if(located) L.circleMarker([m.lat,m.lon],{radius:10,color:'#124B9B',weight:3,fillColor:'#fff',fillOpacity:1})
     .addTo(map).bindPopup('내 위치');
@@ -3482,6 +3506,7 @@ function mountFallbackMap(node){
 function mountMap(){
   var node=document.getElementById("mapCanvas");
   if(!node) return;
+  if(location.protocol==="file:"){ mountFallbackMap(node); return; }
   var token=mapMountToken;
   loadNaverMap().then(function(){
     if(token!==mapMountToken || !node.isConnected || naverMapFailed) return;
@@ -3771,7 +3796,7 @@ function lobbyScrollHint(){
 }
 
 /* ===================== 모바일 택시 연습 ===================== */
-var taxiMap=null, taxiMapKind=null, taxiCarMarker=null, taxiOverlays=[], taxiTimer=null, taxiMountToken=0;
+var taxiMap=null, taxiMapKind=null, taxiCarMarker=null, taxiOverlays=[], taxiTimer=null, taxiMountToken=0, taxiPracticeLayer=null;
 function clearTaxiMap(){
   taxiMountToken++;
   if(taxiMap){
@@ -3780,7 +3805,7 @@ function clearTaxiMap(){
       taxiMap.destroy();
     }else taxiMap.remove();
   }
-  taxiMap=null; taxiMapKind=null; taxiCarMarker=null; taxiOverlays=[];
+  taxiMap=null; taxiMapKind=null; taxiCarMarker=null; taxiOverlays=[]; taxiPracticeLayer=null;
 }
 function stopTaxiTimer(){ if(taxiTimer){ clearInterval(taxiTimer); taxiTimer=null; } }
 function taxiDistance(a,b){
@@ -3799,13 +3824,22 @@ function taxiRouteHTML(){
     +'<span><i></i><b>갈 곳 · '+esc(tx.destination.label)+'</b></span></div>';
 }
 function taxiPinHTML(label,kind){
-  return '<div class="taxi-map-pin'+(kind==="dest"?' dest':'')+'" aria-hidden="true"><b>'
-    +(kind==="dest"?'●':'🚕')+'</b></div><div class="taxi-map-caption">'+label+'</div>';
+  return '<div class="taxi-map-pin '+(kind==="dest"?'dest':'pickup')+'" aria-hidden="true"><b>'
+    +(kind==="dest"?'●':'')+'</b></div><div class="taxi-map-caption">'+label+'</div>';
 }
 function vTaxi(){
   var tx=S.tx, step=tx.step, selecting=step==="pickup"||step==="destination";
-  var h='<div class="taxi-app"><header class="taxi-head"><span class="taxi-brand"><i>T</i>모두택시</span><small>호출 연습</small></header>'
-    +'<div class="taxi-map-wrap"><div class="taxi-map" id="taxiMap" role="application" aria-label="택시 출발지와 목적지를 고르는 지도"></div>';
+  if(step==="home") return '<div class="taxi-home">'
+    +'<div class="taxi-home-head"><h1>모두택시</h1><button class="taxi-search" data-x="start"><span>어디로 갈까요?</span><span>→</span></button></div>'
+    +'<div class="taxi-home-main"><div class="taxi-home-tabs"><strong>이동할 때</strong><span>택시 연습</span></div>'
+    +'<div class="taxi-service-grid"><button class="taxi-service" data-x="start"><span class="icon" aria-hidden="true">🚕</span><span>택시</span></button>'
+    +'<button class="taxi-service" data-x="start"><span class="icon" aria-hidden="true">📍</span><span>탈 곳 지정</span></button>'
+    +'<button class="taxi-service" data-x="start"><span class="icon" aria-hidden="true">🗺️</span><span>갈 곳 지정</span></button></div>'
+    +'<p class="taxi-service-note">지도를 보며 탈 곳과 갈 곳을 고르고, 결제 수단을 선택해 호출까지 연습해 보세요.</p></div>'
+    +'<div class="taxi-home-recent"><h2>택시 호출 연습</h2><p>실제 차량 호출과 결제는 이루어지지 않습니다.</p>'
+    +'<button data-x="start">택시 연습 시작하기 →</button></div></div>';
+  var h='<div class="taxi-app"><div class="taxi-map-wrap"><div class="taxi-map" id="taxiMap" role="application" aria-label="택시 출발지와 목적지를 고르는 지도"></div>'
+    +'<button class="taxi-map-back" data-x="mapBack" aria-label="이전 화면">←</button><div class="taxi-map-notice" id="taxiMapNotice" role="status" hidden></div>';
   if(selecting){
     h+=taxiPinHTML(step==="pickup"?'지도를 움직여 택시를 탈 지점에 맞추세요':'지도를 움직여 갈 곳에 맞추세요',step==="destination"?'dest':'pickup');
     if(step==="pickup") h+='<button class="taxi-locate" data-x="locate">◎ 현재 위치 찾기</button>';
@@ -3814,11 +3848,14 @@ function vTaxi(){
     +(step==="pickup"?'1 / 4 · 탈 곳':step==="destination"?'2 / 4 · 갈 곳':step==="vehicle"?'3 / 4 · 차량 선택':step==="payment"?'4 / 4 · 결제 수단':'호출 상태')+'</span>';
   if(step==="pickup"){
     HINT='[data-x="pickup"]';
-    h+='<h1>어디서 택시를 탈까요?</h1><p>현재 위치를 찾거나 지도를 움직여 가운데 택시 표시를 정확한 탑승 지점에 맞춰 주세요.</p>'
+    h+='<h1>어디서 택시를 탈까요?</h1><p>지도를 움직여 가운데 출발 표시를 택시를 탈 지점에 맞춰 주세요.</p>'
+      +'<div class="taxi-place-row"><span class="dot"></span><span>탈 곳 · 지도에서 지정한 위치</span></div>'
+      +'<button class="taxi-place-row destination" data-x="pickup"><span class="dot"></span><span>어디로 갈까요?</span></button>'
+      +'<div class="taxi-quick"><button data-x="quick" data-v="집">⌂ 집 위치 지정</button><button data-x="quick" data-v="회사">▣ 회사 위치 지정</button></div>'
       +'<div class="taxi-coord"><b>지도 가운데 위치</b><span id="taxiCoord">'+taxiCoord(tx.center)+'</span></div>'
       +'<label class="taxi-field" for="taxiPickupName">탑승 지점 이름 (선택)<input id="taxiPickupName" maxlength="40" placeholder="예: 정문 앞" value="'+esc(tx.pickupName).replace(/"/g,"&quot;")+'"></label>'
       +(tx.gpsStatus?'<p role="status">'+esc(tx.gpsStatus)+'</p>':'')
-      +'<button class="taxi-primary" data-x="pickup">여기서 탈게요</button>';
+      +'<button class="taxi-primary" data-x="pickup">탈 곳 정하고 갈 곳 고르기</button>';
   }else if(step==="destination"){
     HINT='[data-x="destination"]';
     h+='<h1>어디로 갈까요?</h1><p>지도를 움직여 가운데 파란 표시를 목적지에 맞춰 주세요. 지도 한 곳을 눌러도 이동합니다.</p>'
@@ -3865,6 +3902,31 @@ function taxiMapStatus(message){
   var note=document.getElementById("taxiMapProvider");
   if(note) note.textContent=message;
 }
+function taxiMapNotice(message,practice){
+  var note=document.getElementById("taxiMapNotice");
+  if(note){ note.textContent=message||""; note.hidden=!message; note.classList.toggle("practice",!!practice); }
+}
+function drawTaxiPracticeMap(map){
+  if(!window.L) return;
+  if(taxiPracticeLayer) map.removeLayer(taxiPracticeLayer);
+  var c=map.getCenter(), d=.00035*Math.pow(2,17-map.getZoom()), lat=c.lat, lon=c.lng;
+  var group=L.layerGroup().addTo(map);
+  for(var i=-8;i<=8;i++){
+    L.polyline([[lat+i*d,lon-9*d],[lat+i*d,lon+9*d]],{color:i%4===0?"#F5F4ED":"#F9FAF7",weight:i%4===0?15:9,interactive:false}).addTo(group);
+    L.polyline([[lat-9*d,lon+i*d],[lat+9*d,lon+i*d]],{color:i%4===0?"#F5F4ED":"#F9FAF7",weight:i%4===0?15:9,interactive:false}).addTo(group);
+  }
+  for(var y=-6;y<=6;y+=2) for(var x=-6;x<=6;x+=2){
+    var green=(x===4&&y===2)||(x===-4&&y===-4);
+    L.rectangle([[lat+(y+.3)*d,lon+(x+.3)*d],[lat+(y+1.65)*d,lon+(x+1.65)*d]],{
+      color:green?"#C8DDBF":"#CED9DC",weight:1,fillColor:green?"#D7E9CB":"#F7F9F7",fillOpacity:1,interactive:false
+    }).addTo(group);
+  }
+  [[1,1,"연습용 건물"],[-3,2,"정류장"],[3,-4,"도서관"]].forEach(function(p){
+    L.marker([lat+p[0]*d,lon+p[1]*d],{interactive:false,
+      icon:L.divIcon({className:"",html:'<span class="taxi-practice-label">'+p[2]+'</span>',iconSize:[0,0]})}).addTo(group);
+  });
+  taxiPracticeLayer=group;
+}
 function taxiNaverPoint(p){ return new naver.maps.LatLng(p.lat,p.lon); }
 function taxiNaverMarker(map,p,label,color){
   return new naver.maps.Marker({position:taxiNaverPoint(p),map:map,title:label,
@@ -3901,20 +3963,40 @@ function mountTaxiNaver(node){
   }
 }
 function mountTaxiFallback(node){
-  if(!window.L){ taxiMapStatus("지도를 불러오지 못했습니다. 인터넷 연결을 확인해 주세요."); return; }
+  if(!window.L){
+    taxiMapStatus("지도를 불러오지 못했습니다.");
+    taxiMapNotice("지도 라이브러리를 열 수 없습니다. 인터넷 연결을 확인하고, 공개 HTTPS 주소에서 다시 열어 주세요.");
+    return;
+  }
   var tx=S.tx, choosing=tx.step==="pickup"||tx.step==="destination";
   var center=choosing?tx.center:tx.pickup;
   taxiMap=L.map(node,{zoomControl:false,scrollWheelZoom:false}).setView([center.lat,center.lon],choosing?(tx.zoom||17):14);
   taxiMapKind="leaflet";
-  taxiMapStatus("네이버 지도 연결에 실패해 기본 지도를 표시합니다.");
+  taxiMapStatus(location.protocol==="file:"
+    ?"파일 미리보기에서는 기본 지도를 표시합니다. 네이버 지도는 공개 HTTPS 주소에서 확인해 주세요."
+    :"네이버 지도 연결에 실패해 기본 지도를 표시합니다.");
+  node.classList.add("practice-map");
+  drawTaxiPracticeMap(taxiMap);
+  taxiMapNotice("연습용 지도 · 실제 지도 연결 중",true);
+  var failedTiles=0;
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,
-    attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap 기여자</a>'}).addTo(taxiMap);
+    attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap 기여자</a>'})
+    .on("tileerror",function(){
+      failedTiles++;
+      if(failedTiles>=3) taxiMapNotice("연습용 지도 · 실제 지도는 HTTPS 주소에서 확인",true);
+    }).on("load",function(){
+      if(failedTiles===0 && taxiMap && taxiMapKind==="leaflet"){
+        if(taxiPracticeLayer){ taxiMap.removeLayer(taxiPracticeLayer); taxiPracticeLayer=null; }
+        node.classList.remove("practice-map"); taxiMapNotice("");
+      }
+    }).addTo(taxiMap);
   L.control.zoom({position:"bottomleft"}).addTo(taxiMap);
   if(choosing){
     taxiMap.on("moveend",function(){
       if(S.tx!==tx) return;
       var p=taxiMap.getCenter(); tx.center={lat:p.lat,lon:p.lng}; tx.zoom=taxiMap.getZoom();
       var label=document.getElementById("taxiCoord"); if(label) label.textContent=taxiCoord(tx.center);
+      if(taxiPracticeLayer) drawTaxiPracticeMap(taxiMap);
     });
     taxiMap.on("click",function(e){ taxiMap.panTo(e.latlng); });
   }else{
@@ -3932,6 +4014,7 @@ function mountTaxiFallback(node){
 }
 function mountTaxiMap(){
   var node=document.getElementById("taxiMap"); if(!node) return;
+  if(location.protocol==="file:"){ mountTaxiFallback(node); return; }
   var token=taxiMountToken;
   loadNaverMap().then(function(){
     if(token!==taxiMountToken || !node.isConnected || naverMapFailed) return;
@@ -3963,6 +4046,21 @@ function taxiLocate(){
 }
 function taxiAct(btn){
   var tx=S.tx, a=btn.getAttribute("data-x"), v=btn.getAttribute("data-v");
+  if(a==="start"){ tx.step="pickup"; render(); return; }
+  if(a==="mapBack"){
+    if(tx.step==="pickup") tx.step="home";
+    else if(tx.step==="destination") tx.step="pickup";
+    else if(tx.step==="vehicle") tx.step="destination";
+    else if(tx.step==="payment") tx.step="vehicle";
+    else tx.step="home";
+    render(); return;
+  }
+  if(a==="quick"){
+    tx.destinationName=v;
+    tx.pickup={lat:tx.center.lat,lon:tx.center.lon,label:tx.pickupName.trim()||"지도에서 지정한 탑승 지점"};
+    tx.step="destination"; tx.zoom=16; render();
+    toast(v+" 위치를 지도에서 지정해 주세요."); return;
+  }
   if(a==="locate"){ taxiLocate(); return; }
   if(a==="pickup"){
     tx.pickup={lat:tx.center.lat,lon:tx.center.lon,label:tx.pickupName.trim()||"지도에서 지정한 탑승 지점"};
@@ -5179,7 +5277,7 @@ function softReset(){
 }
 function setMode(m){
   S.mode=m; if(m!=="lobby") S.mission=0; else S.lv="home";
-  S.missionOpen=m!=="lobby" && S.cls==="어려움";
+  S.missionOpen=false;
   [].forEach.call(el.ms.querySelectorAll("button"),function(x){
     x.setAttribute("aria-pressed", String(x.getAttribute("data-m")===m));
   });
@@ -5240,14 +5338,11 @@ el.timer.addEventListener("click", function(){
   el.timer.querySelector("small").textContent=S.timerOn?"켜짐":"꺼짐";
   save(); resetTimer(); render();
 });
-document.getElementById("btnMission").addEventListener("click",function(){S.missionOpen=true;paintMission();el.tbar.hidden=true;});
-document.getElementById("missionPinExpand").addEventListener("click",function(){S.missionOpen=true;paintMission();el.tbar.hidden=true;});
-document.getElementById("missionClose").addEventListener("click",closeMission);
+document.getElementById("btnMission").addEventListener("click",function(){
+  S.missionOpen=!S.missionOpen; paintMission(); el.tbar.hidden=!timerVisible();
+});
 document.getElementById("missionChange").addEventListener("click",function(){
   S.mission=(S.mission+1)%MISSIONS[S.mode].length; softReset(); render();
-});
-document.getElementById("missionLayer").addEventListener("click",function(e){
-  if(e.target.hasAttribute("data-mission-close")) closeMission();
 });
 document.addEventListener("keydown",function(e){if(e.key==="Escape"&&S.missionOpen) closeMission();});
 var fullBtn=document.getElementById("btnFull");
@@ -5894,8 +5989,8 @@ var TUTORIAL=[
   {title:"난이도를 살펴보세요",body:"화면 위의 난이도 바꾸기를 눌러 보세요.",target:'[data-l="lv"][data-v="class"]',done:function(){return S.mode==="lobby"&&S.lv==="class";}},
   {title:"난이도를 선택하세요",body:"현재 선택된 난이도를 눌러 로비로 돌아가세요. 나중에 다시 바꿀 수 있습니다.",target:function(){return '[data-l="cls"][data-v="'+S.cls+'"]';},done:function(){return S.mode==="lobby"&&S.lv==="home";}},
   {title:"오늘의 연습을 시작하세요",body:"오늘 연습 시작하기를 눌러 실제 연습 화면으로 들어가세요.",target:'.lbcta[data-l="go"],.lbcta[data-l="mode"]',done:function(){return S.mode!=="lobby";}},
-  {title:"미션을 읽어 보세요",body:"위쪽의 오늘 미션 보기를 누르면 해야 할 일을 확인할 수 있습니다.",target:'#btnMission',done:function(){return S.missionOpen;}},
-  {title:"미션 창을 닫아 보세요",body:"내용을 읽은 뒤 연습 시작하기를 눌러 화면으로 돌아가세요. 초보자용에서는 미션이 계속 보입니다.",target:'#missionClose',done:function(){return !S.missionOpen;}},
+  {title:"미션을 읽어 보세요",body:"연습 화면 위의 미션 다시 보기를 눌러 해야 할 일을 확인해 보세요.",target:'#btnMission',done:function(){return S.missionOpen;}},
+  {title:"미션을 접어 보세요",body:"미션 접기를 누르면 연습 화면을 더 넓게 볼 수 있습니다.",target:'#btnMission',done:function(){return !S.missionOpen;}},
   {title:"로비로 돌아가세요",body:"아래 로비 버튼을 눌러 처음 화면으로 돌아가세요.",target:'#ctlrow [data-c="lobby"]',done:function(){return S.mode==="lobby"&&S.lv==="home";}},
   {title:"다른 연습도 찾아보세요",body:"가게 고르기를 누르면 카페, 은행, 택시 등 다른 연습을 고를 수 있습니다.",target:'#ctlrow [data-c="picker"]',done:function(){return S.picker;}},
   {title:"가게 목록을 닫아 보세요",body:"가게 목록을 살펴본 뒤 닫기 버튼을 누르세요.",target:'.picker .hd [data-p="close"]',done:function(){return !S.picker;}},
@@ -5927,7 +6022,7 @@ function startTutorial(){
 }
 function paintTutorial(){
   if(tutorialStep<0||!tutorialLayer) return;
-  /* 어려움은 미션 창이 자동으로 열립니다. */
+  /* 미션은 기본적으로 접혀 있습니다. */
   if(tutorialStep===4&&S.missionOpen) tutorialStep=5;
   var step=TUTORIAL[tutorialStep], sel=typeof step.target==="function"?step.target():step.target;
   var target=sel?document.querySelector(sel):null;
@@ -5995,7 +6090,7 @@ function boot(saved){
   if(userName()) S.name=userName();
   el.timer.setAttribute("aria-pressed",String(S.timerOn));
   if(saved&&saved.mode&&(saved.mode==="lobby"||MISSIONS[saved.mode])){ S.mode=saved.mode; S.mission=saved.mission||0; }
-  S.missionOpen=S.mode!=="lobby" && S.cls==="어려움";
+  S.missionOpen=false;
   [].forEach.call(el.ms.querySelectorAll("button"),function(x){
     x.setAttribute("aria-pressed", String(x.getAttribute("data-m")===S.mode));
   });
