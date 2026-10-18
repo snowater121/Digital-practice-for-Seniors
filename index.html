@@ -1610,7 +1610,7 @@ html:not([data-mode="lobby"]) .device{border-width:3px;border-radius:0;box-shado
 .install-box{padding:16px;font-size:16px;line-height:1.6}
 .install-box p{margin:6px 0 0}
 .install-box button{min-height:48px;padding:8px 16px;background:#1A3D7C;color:#fff;border-radius:8px;font-size:16px}
-.taxi-app{height:100%;min-height:100%;display:flex;flex-direction:column;background:#F5F6FA;color:#20242B;font-family:'Noto Sans KR',sans-serif}
+.taxi-app{flex:1;min-height:0;height:100%;display:flex;flex-direction:column;background:#F5F6FA;color:#20242B;font-family:'Noto Sans KR',sans-serif}
 .taxi-home{min-height:100%;background:#F4F5F7;color:#242933;display:flex;flex-direction:column}
 .taxi-home-head{background:#fff;padding:18px 18px 22px}
 .taxi-home-head h1{font-size:22px;margin:0 0 20px;font-weight:900}
@@ -1633,7 +1633,7 @@ html:not([data-mode="lobby"]) .device{border-width:3px;border-radius:0;box-shado
 .taxi-brand i{display:grid;place-items:center;width:27px;height:27px;border-radius:6px;background:#213E80;color:#FFD15A;font-style:normal;font-size:17px}
 .taxi-head small{margin-left:auto;font-size:12px;font-weight:800}
 .taxi-map-wrap{position:relative;flex:1;min-height:250px;background:#DDE5E5;overflow:hidden}
-.taxi-map{position:absolute;inset:0;z-index:0}
+.taxi-map{position:absolute;inset:0;width:100%;height:100%;z-index:0}
 .taxi-map.practice-map{background:#DCE9F0}
 .taxi-practice-label{display:block;width:max-content;padding:4px 6px;border:1px solid #C5D4DD;border-radius:4px;background:#fff;color:#506274;font-size:12px;font-weight:800;white-space:nowrap;box-shadow:0 1px 3px #0002}
 .taxi-map-back{position:absolute;left:14px;top:14px;z-index:500;width:52px;height:52px;border-radius:50%;background:#fff;box-shadow:0 3px 12px #0003;color:#273443;font-size:26px}
@@ -3971,6 +3971,9 @@ function mountTaxiNaver(node){
     clearTaxiMap();
     if(node.isConnected) mountTaxiFallback(node);
   },8000);
+  setTimeout(function(){
+    if(taxiMap===map && node.isConnected) map.autoResize();
+  },100);
   naver.maps.Event.addListener(map,"tilesloaded",function(){
     if(taxiMap!==map || !node.isConnected) return;
     if(taxiTileTimer){ clearTimeout(taxiTileTimer); taxiTileTimer=null; }
