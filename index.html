@@ -1126,6 +1126,8 @@ button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit
 .picker .hd button{border:1px solid var(--shell-line);background:#0E1016;color:var(--shell-mut);
   border-radius:8px;padding:11px 15px;font-size:13.5px;font-weight:800;min-height:48px}
 .pkgrid{display:flex;flex-direction:column;gap:9px}
+.pkgroup{margin:12px 4px 2px;color:var(--shell-fg);font-size:16px}
+.lbmodegroup{margin:20px 0 5px;color:var(--k-fg);font-size:18px}
 .pkitem{display:flex;align-items:center;gap:12px;width:100%;background:#0E1016;border:1px solid var(--shell-line);
   border-radius:12px;padding:12px 13px;color:var(--shell-fg);min-height:72px;text-align:left}
 .pkitem[aria-current="true"]{border-color:var(--amber);box-shadow:inset 0 0 0 1px var(--amber)}
@@ -1687,6 +1689,25 @@ html:not([data-mode="lobby"]) .device{border-width:3px;border-radius:0;box-shado
 .taxi-status .icon{font-size:29px}.taxi-status b{display:block;font-size:16px}.taxi-status small{font-size:13px;color:#506176}
 .taxi-progress{height:8px;margin:0 0 11px;border-radius:99px;background:#E3E9F1;overflow:hidden}.taxi-progress i{display:block;height:100%;background:#3177EA;transition:width .7s linear}
 .taxi-note{display:block;margin-top:8px;font-size:12px;line-height:1.45;color:#647182}
+.life-app{flex:1;min-height:100%;background:#F4F6FA;color:#20242B;font-family:'Noto Sans KR',sans-serif}
+.life-head{padding:22px 20px;background:#fff;border-bottom:1px solid #DCE2EA}
+.life-head small{display:block;margin-bottom:5px;color:#485363;font-size:15px;font-weight:700}
+.life-head h1{margin:0;color:var(--life-accent,#173B72);font-size:26px;line-height:1.3}
+.life-body{display:grid;gap:16px;padding:20px 16px 32px}
+.life-scene,.life-panel{padding:20px;border:1px solid #DCE2EA;border-radius:15px;background:#fff}
+.life-scene{border-top:5px solid var(--life-accent,#173B72)}
+.life-scene strong{display:block;margin-bottom:9px;color:var(--life-accent,#173B72);font-size:17px}
+.life-scene p,.life-panel p{margin:0;font-size:18px;line-height:1.55}
+.life-progress{color:#485363;font-size:15px;font-weight:700}
+.life-panel h2{margin:0 0 11px;font-size:23px;line-height:1.35}
+.life-options{display:grid;gap:10px;margin-top:20px}
+.life-options button,.life-again{width:100%;min-height:60px;padding:13px 16px;border:2px solid #AFC4E1;border-radius:12px;background:#E8EFF9;color:#173B72;text-align:left;font-size:18px;font-weight:700;line-height:1.4}
+.life-options button:active,.life-again:active{background:#D6E4F7}
+.life-feedback{padding:14px 16px;border-left:5px solid #B0422D;border-radius:8px;background:#FFF2EF;color:#752A20;font-size:17px;line-height:1.5;font-weight:700}
+.life-done{border-color:#9FC9AE;background:#F5FBF6}
+.life-done h2{color:#15542F}
+.life-note{color:#485363;font-size:15px;line-height:1.55}
+.life-again{margin-top:18px;background:#1E407C;border-color:#1E407C;color:#fff;text-align:center}
 @media(max-height:690px){.taxi-map-wrap{min-height:185px}.taxi-sheet{padding-top:11px;padding-bottom:12px}.taxi-sheet h1{font-size:20px}.taxi-option{min-height:54px}}
 .tutorial-layer{position:fixed;inset:0;z-index:10000;pointer-events:none}
 .tutorial-shade{position:fixed;background:rgba(12,25,43,.7);pointer-events:auto}
@@ -1709,6 +1730,13 @@ html:not([data-mode="lobby"]) .device{border-width:3px;border-radius:0;box-shado
         <button data-m="table" aria-pressed="false">테이블 오더</button>
         <button data-m="train" aria-pressed="false">기차 예매</button>
         <button data-m="taxi" aria-pressed="false">모바일 택시</button>
+        <button data-m="hospital" aria-pressed="false">병원 예약</button>
+        <button data-m="insurance" aria-pressed="false">보험 청구</button>
+        <button data-m="shopping" aria-pressed="false">온라인 쇼핑</button>
+        <button data-m="shopfraud" aria-pressed="false">쇼핑 사기</button>
+        <button data-m="smishing" aria-pressed="false">스미싱 문자</button>
+        <button data-m="familyfraud" aria-pressed="false">가족 사칭</button>
+        <button data-m="certificate" aria-pressed="false">무인민원 발급</button>
       </div>
     </div>
     <div class="daily" id="daily"></div>
@@ -2138,7 +2166,108 @@ MISSIONS.taxi=[
  {t:"<b>넓은 차량</b>을 고르고, <b>연습용 카드</b>로 결제한 뒤 택시 도착까지 확인하세요.",
   ck:function(s){return s.tx && s.tx.arrived && s.tx.vehicle==="wide" && s.tx.payment==="card";}}
 ];
+/* 생활 서비스와 사기 예방: 모두 가상 화면이며 개인정보·결제 정보를 받지 않습니다. */
+var LIFE_FLOWS={
+  hospital:{store:"건강나무 병원",what:"진료 예약 연습",short:"병원",color:"#27658A",missions:[
+    {t:"병원 앱에서 <b>내과 진료를 예약</b>하고 예약 내용을 확인하세요.",
+     scene:"진료가 필요해 병원 앱을 열었습니다. 연습용 병원이며 실제 예약은 되지 않습니다.",result:"진료과와 시간을 확인해 예약을 마쳤습니다.",steps:[
+      {q:"어떤 메뉴를 누를까요?",body:"진료를 받을 날짜와 시간을 고르려 합니다.",options:[["진료 예약",true],["병원 소식",false,"예약은 ‘진료 예약’에서 시작합니다."]]},
+      {q:"진료과를 골라 주세요",body:"속이 불편해 내과 진료를 받으려 합니다.",options:[["정형외과",false,"미션에서 요청한 진료과는 내과입니다."],["내과",true]]},
+      {q:"예약 전 마지막으로 확인하세요",body:"내과 · 다음 주 화요일 오전 10시 · 연습용 예약",options:[["내용을 확인하고 예약",true],["확인하지 않고 닫기",false,"진료과와 시간을 확인한 뒤 예약해 주세요."]]}
+    ]},
+    {t:"예약 내역에서 <b>진료 시간을 변경</b>하고 새 시간을 확인하세요.",
+     scene:"연습용 예약: 내과 · 다음 주 화요일 오전 10시. 시간을 바꾸려 합니다.",result:"바뀐 시간을 예약 내역에서 확인했습니다.",steps:[
+      {q:"예약을 어디서 찾을까요?",body:"이미 잡은 예약을 변경하려 합니다.",options:[["새 예약 만들기",false,"기존 예약은 예약 내역에서 변경합니다."],["예약 내역",true]]},
+      {q:"새 시간을 고르세요",body:"오전에는 방문하기 어렵습니다.",options:[["다음 주 화요일 오후 2시",true],["기존 오전 10시 유지",false,"미션은 시간을 변경하는 것입니다."]]},
+      {q:"변경 결과를 확인하세요",body:"내과 · 다음 주 화요일 오후 2시로 표시됩니다.",options:[["변경 완료 확인",true],["변경 화면만 닫기",false,"저장된 시간을 확인해 주세요."]]}
+    ]}
+  ]},
+  insurance:{store:"안심 보험 앱",what:"보험 청구 연습",short:"보험",color:"#315E89",missions:[
+    {t:"진료비 영수증을 준비해 <b>보험금 청구</b> 절차를 마치세요.",
+     scene:"병원 진료 후 보험 앱을 열었습니다. 화면의 영수증은 가상 자료입니다.",result:"연습용 영수증으로 청구 절차를 마쳤습니다. 실제 보험사에는 전송되지 않았습니다.",steps:[
+      {q:"어떤 메뉴로 들어갈까요?",body:"진료비를 청구하려 합니다.",options:[["보험금 청구",true],["광고·이벤트",false,"청구는 ‘보험금 청구’ 메뉴에서 시작합니다."]]},
+      {q:"어떤 서류를 첨부할까요?",body:"연습용 진료비 영수증이 준비돼 있습니다.",options:[["연습용 진료비 영수증 선택",true],["관계없는 사진 선택",false,"청구에 필요한 서류를 확인해 주세요."]]},
+      {q:"제출 전 내용을 확인하세요",body:"청구 항목: 진료비 · 첨부: 연습용 영수증",options:[["내용 확인 후 청구 연습 완료",true],["내용을 보지 않고 닫기",false,"제출 전 항목과 첨부 서류를 확인해 주세요."]]}
+    ]},
+    {t:"보험 앱에서 <b>청구 진행 상태</b>를 찾아 확인하세요.",
+     scene:"연습용 청구 건의 처리 상황을 확인하려 합니다.",result:"청구 내역에서 진행 상태를 확인했습니다.",steps:[
+      {q:"진행 상태는 어디에 있을까요?",body:"신청했던 청구를 다시 보려 합니다.",options:[["새 청구하기",false,"새 청구가 아니라 기존 내역을 확인합니다."],["청구 내역",true]]},
+      {q:"무엇을 먼저 살펴볼까요?",body:"연습용 접수 건에 ‘서류 확인 중’이라고 표시됩니다.",options:[["진행 상태와 추가 요청 여부 확인",true],["문자에 적힌 낯선 링크 누르기",false,"진행 상태는 보험사 앱의 청구 내역에서 확인하세요."]]}
+    ]}
+  ]},
+  shopping:{store:"한빛 장보기",what:"온라인 쇼핑 연습",short:"쇼핑",color:"#795183",missions:[
+    {t:"온라인 상점에서 상품을 장바구니에 담고 <b>주문 내용을 확인</b>하세요.",
+     scene:"연습용 상점에서 생수 2묶음을 주문하려 합니다. 실제 결제는 되지 않습니다.",result:"상품·수량·배송지·금액을 확인하고 가상 주문을 마쳤습니다.",steps:[
+      {q:"상품을 고르세요",body:"구매할 것은 생수 2묶음입니다.",options:[["생수 2묶음 장바구니 담기",true],["생수 1묶음 담기",false,"미션의 수량은 2묶음입니다."]]},
+      {q:"주문서에서 무엇을 확인할까요?",body:"배송지와 최종 결제 금액이 표시됩니다.",options:[["상품·수량·배송지·최종 금액 확인",true],["확인 없이 결제 버튼 누르기",false,"주문 전 내용을 확인해 주세요."]]},
+      {q:"결제 방법을 고르세요",body:"연습용 결제만 가능하며 실제 돈은 나가지 않습니다.",options:[["연습용 결제로 주문 완료",true],["판매자 개인 계좌로 송금",false,"개인 계좌 송금은 이 연습의 안전한 결제 방법이 아닙니다."]]}
+    ]},
+    {t:"쇼핑 앱의 <b>주문 내역에서 취소 요청</b>을 찾아보세요.",
+     scene:"연습용 주문을 취소하려 합니다. 실제 주문은 없습니다.",result:"주문 내역에서 취소 요청과 처리 상태를 확인했습니다.",steps:[
+      {q:"주문을 어디서 찾을까요?",body:"이미 주문한 상품을 취소하려 합니다.",options:[["주문 내역",true],["상품 검색",false,"완료한 주문은 주문 내역에서 찾습니다."]]},
+      {q:"어떤 순서로 진행할까요?",body:"상품과 수량을 먼저 확인합니다.",options:[["해당 주문 확인 후 취소 요청",true],["판매자에게 계좌번호부터 보내기",false,"앱의 주문 내역에서 해당 주문을 확인하고 취소를 요청하세요."]]}
+    ]}
+  ]},
+  shopfraud:{store:"안전한 쇼핑 연습",what:"쇼핑 사기 구별",short:"사기",color:"#875438",missions:[
+    {t:"할인 판매 글에서 <b>쇼핑 사기 신호</b>를 찾고 안전하게 대응하세요.",
+     scene:"‘오늘만 90% 할인! 채팅으로 연락해 개인 계좌에 바로 입금하세요.’라는 판매 글이 보입니다.",result:"급한 입금 요구를 경계하고 거래를 멈췄습니다.",steps:[
+      {q:"어떤 점이 수상할까요?",body:"판매자가 앱 밖의 채팅과 개인 계좌 입금을 요구합니다.",options:[["앱 밖 거래·개인 계좌 입금 요구",true],["상품 사진이 선명한 점",false,"핵심 위험 신호는 앱 밖 거래와 개인 계좌 입금 요구입니다."]]},
+      {q:"어떻게 하시겠습니까?",body:"판매자가 지금 입금하지 않으면 할인이 끝난다고 재촉합니다.",options:[["거래를 멈추고 공식 판매 페이지 확인",true],["곧바로 개인 계좌로 입금",false,"서두르게 하는 요청에 따라 돈을 보내지 마세요."]]}
+    ]},
+    {t:"판매자가 보낸 <b>외부 결제 링크</b>를 보고 안전한 선택을 하세요.",
+     scene:"주문 뒤 판매자가 ‘결제 오류’라며 낯선 주소를 메시지로 보냈습니다.",result:"문자 링크 대신 주문한 쇼핑 앱에서 결제 상태를 확인했습니다.",steps:[
+      {q:"결제 상태를 어디서 확인할까요?",body:"판매자의 메시지는 원래 쇼핑 앱 밖에서 왔습니다.",options:[["쇼핑 앱을 직접 열어 주문 내역 확인",true],["메시지의 외부 결제 주소 열기",false,"낯선 결제 링크 대신 쇼핑 앱을 직접 열어 확인하세요."]]},
+      {q:"문제가 계속되면?",body:"앱 주문 내역에는 결제 오류가 없습니다.",options:[["앱 고객센터로 문의",true],["메시지에 카드번호 답장",false,"카드번호를 메시지로 보내지 마세요."]]}
+    ]}
+  ]},
+  smishing:{store:"문자 안전 연습",what:"스미싱 문자 구별",short:"문자",color:"#7D4A6C",missions:[
+    {t:"택배 문자에 있는 <b>낯선 링크</b>를 구별하고 안전하게 확인하세요.",
+     scene:"[택배] 주소가 틀려 반송 예정. 지금 링크에서 주소와 카드 정보를 입력하세요.",result:"문자 링크를 누르지 않고 배송 앱을 직접 열어 확인했습니다.",steps:[
+      {q:"이 문자에서 경계할 점은?",body:"주소와 카드 정보를 링크에서 입력하라고 합니다.",options:[["낯선 링크와 개인정보 요구",true],["택배라는 단어가 있는 점",false,"링크를 통한 개인정보 요구가 위험 신호입니다."]]},
+      {q:"어디서 배송 상태를 확인할까요?",body:"문자 속 링크는 이 연습에서도 열리지 않습니다.",options:[["이용 중인 택배 앱을 직접 열기",true],["문자 링크 누르기",false,"링크를 누르지 말고 공식 앱을 직접 열어 확인하세요."]]}
+    ]},
+    {t:"지원금 안내 문자에서 <b>앱 설치 요구</b>를 구별하세요.",
+     scene:"[지원금] 오늘까지 신청! 아래 주소에서 보안 앱을 설치해야 지급됩니다.",result:"문자의 설치 요구를 거절하고 공식 안내를 직접 확인했습니다.",steps:[
+      {q:"어떤 요구가 특히 위험할까요?",body:"문자가 앱 설치를 재촉합니다.",options:[["문자 링크에서 앱 설치 요구",true],["신청 기간을 안내한 점",false,"출처를 확인하지 않은 앱 설치 요구가 위험합니다."]]},
+      {q:"어떻게 확인할까요?",body:"문자 링크 대신 스스로 찾은 공식 안내를 이용합니다.",options:[["해당 기관의 공식 앱·사이트를 직접 열기",true],["문자 링크에서 앱 설치",false,"문자에 적힌 설치 주소를 사용하지 마세요."]]}
+    ]}
+  ]},
+  familyfraud:{store:"가족 연락 연습",what:"가족 사칭 대처",short:"가족",color:"#6856A1",missions:[
+    {t:"자녀를 사칭한 메신저의 <b>송금 요청을 확인</b>하고 대응하세요.",
+     scene:"‘엄마, 휴대폰이 고장 났어. 급하니 처음 보는 계좌로 50만 원만 보내줘.’라는 메시지가 왔습니다.",result:"메신저 요청만 믿지 않고 평소 쓰던 번호로 직접 확인했습니다.",steps:[
+      {q:"바로 송금해도 될까요?",body:"메시지는 새로운 번호에서 왔고 통화는 피합니다.",options:[["송금하지 않고 일단 멈추기",true],["요청한 계좌로 즉시 송금",false,"송금하기 전에 가족 본인인지 따로 확인해 주세요."]]},
+      {q:"어떻게 본인을 확인할까요?",body:"평소 저장해 둔 자녀 전화번호가 있습니다.",options:[["저장된 번호로 직접 전화하기",true],["새 계정에 계좌번호 답장하기",false,"새 계정이 아닌 기존 연락처로 직접 확인하세요."]]}
+    ]},
+    {t:"가족을 사칭한 메신저가 <b>신분증 사진</b>을 요구할 때 대응하세요.",
+     scene:"‘새 휴대폰 인증이 안 돼. 주민등록증 앞뒤를 찍어 보내줘.’라는 메시지가 왔습니다.",result:"신분증을 보내지 않고 기존 연락처로 본인을 확인했습니다.",steps:[
+      {q:"신분증 사진을 보내시겠습니까?",body:"상대방은 가족 이름과 사진을 사용하고 있습니다.",options:[["사진을 보내지 않고 멈추기",true],["신분증 앞뒤 사진 전송",false,"프로필만으로 가족 본인인지 확인할 수 없습니다."]]},
+      {q:"어떻게 확인할까요?",body:"평소 사용하던 번호로 전화할 수 있습니다.",options:[["기존 전화번호로 직접 통화하기",true],["메신저에서만 계속 대화하기",false,"기존 연락처로 직접 통화해 확인하세요."]]}
+    ]}
+  ]},
+  certificate:{store:"무인민원 발급기",what:"증명서 발급 연습",short:"민원",color:"#3C6578",missions:[
+    {t:"무인민원 발급기에서 <b>주민등록등본</b>을 골라 발급 흐름을 연습하세요.",
+     scene:"가상 무인민원 발급기입니다. 주민등록번호와 지문을 받지 않으며 실제 증명서는 출력되지 않습니다.",result:"등본 종류와 발급 내용을 확인하는 과정을 연습했습니다.",steps:[
+      {q:"어떤 증명서를 고를까요?",body:"주민등록등본이 필요합니다.",options:[["주민등록등본",true],["가족관계증명서",false,"요청한 서류는 주민등록등본입니다."]]},
+      {q:"본인 확인은 어떻게 진행될까요?",body:"실제 기기에서는 안내에 따라 본인 확인이 필요할 수 있습니다. 여기서는 입력하지 않습니다.",options:[["연습용 본인 확인 안내 보기",true],["주민등록번호를 이 웹앱에 입력",false,"이 연습에는 실제 주민등록번호를 입력하지 않습니다."]]},
+      {q:"출력 전 무엇을 볼까요?",body:"증명서 종류와 부수가 표시됩니다.",options:[["등본 · 1부 확인 후 가상 출력",true],["종류를 보지 않고 출력",false,"증명서 종류와 부수를 확인해 주세요."]]}
+    ]},
+    {t:"무인민원 발급기에서 <b>가족관계증명서</b>를 선택하고 내용을 확인하세요.",
+     scene:"가상 발급기에서 가족관계증명서 1부를 발급하는 상황입니다.",result:"가족관계증명서 종류와 부수를 확인했습니다.",steps:[
+      {q:"어느 메뉴로 들어갈까요?",body:"가족관계증명서를 찾으려 합니다.",options:[["가족관계 등록부",true],["주민등록",false,"가족관계증명서는 가족관계 등록부에서 찾습니다."]]},
+      {q:"어떤 서류를 고를까요?",body:"가족관계증명서가 필요합니다.",options:[["가족관계증명서",true],["혼인관계증명서",false,"미션에서 요청한 서류를 선택해 주세요."]]},
+      {q:"마지막으로 확인하세요",body:"가족관계증명서 · 1부 · 가상 출력",options:[["내용 확인 후 가상 출력",true],["확인 없이 종료",false,"종류와 부수를 확인해 주세요."]]}
+    ]}
+  ]}
+};
+Object.keys(LIFE_FLOWS).forEach(function(mode){
+  var config=LIFE_FLOWS[mode];
+  DATA[mode]={store:config.store,label:config.what,cats:[]};
+  MISSIONS[mode]=config.missions.map(function(flow,index){
+    return {t:flow.t,ck:function(s){return !!(s.life&&s.life.done&&s.life.mission===index);}};
+  });
+});
 var MODE_LABEL = {cafe:"카페", burger:"패스트푸드", snack:"분식", table:"테이블", bank:"뱅킹", train:"기차", taxi:"택시"};
+Object.keys(LIFE_FLOWS).forEach(function(mode){MODE_LABEL[mode]=LIFE_FLOWS[mode].short;});
 
 function names(s){return s.cart.map(function(i){return i.nm;}).join("|");}
 function cnt(s,nm){var n=0;s.cart.forEach(function(i){
@@ -2160,6 +2289,7 @@ function freshTaxi(){
     pickupName:"",destinationName:"",gpsStatus:"",gpsUsed:false,locating:false,
     vehicle:"standard",payment:"card",progress:0,arrived:false};
 }
+function freshLife(){ return {mission:-1,step:0,done:false,feedback:""}; }
 function freshBank(big){
   return {step:"login", pin:"", keymap:shuffled10(), balanceShown:false, big:!!big, segment:"mine",
           from:0, to:null, amt:0, toTab:"recent", bankPick:null, acctInput:"",
@@ -2171,7 +2301,7 @@ var S = {
   mode:"lobby", screen:"attract", cat:0, serve:null, cart:[],
   modal:null, pending:null, hints:false, timerOn:false, left:60,
   mission:0, orderNo:null, inserting:false, timedout:false, optErr:"", sub:"단품",
-  bk:freshBank(), tr:null, tb:null, tx:freshTaxi(), big:false, picker:false,
+  bk:freshBank(), tr:null, tb:null, tx:freshTaxi(), life:freshLife(), big:false, picker:false,
   cls:"초보자용", lv:"home", name:"", recRange:"day", helpTab:null,
   ufnm:"", ufpin:"", uorg:"", uq:null, uqpin:"", uerr:"", umove:null,
   demoId:"", demoProvider:"", demoError:"",
@@ -2360,7 +2490,7 @@ function recordClear(mode,mi){
   if(DAILY.cleared.length>=3) DAILY.dayDone=true;
   if(justCleared) earned=earnDemoMileage(DAILY.streak,mode,mi);
   saveDaily(); paintDaily();
-  if(S.mode==="bank"||S.mode==="train"||S.mode==="table"||S.mode==="taxi"){
+  if(S.mode==="bank"||S.mode==="train"||S.mode==="table"||S.mode==="taxi"||LIFE_FLOWS[S.mode]){
     toast("미션 성공!"+(LASTRES?" 걸린 시간 "+secTxt(LASTRES.s)+" · 헤맨 횟수 "+LASTRES.w+"번":"")+(justCleared?" · 오늘 "+Math.min(DAILY.cleared.length,3)+"/3":"")+(earned?" · 마일리지 +"+earned+"P":""),true);
   }else if(earned) toast("미션 성공! 마일리지 +"+earned+"P",true);
 }
@@ -2413,7 +2543,7 @@ function curMission(){return MISSIONS[S.mode][S.mission];}
 
 /* ========== 타이머 ========== */
 function timerVisible(){
-  return !S.missionOpen && !S.missionIntroOpen && S.timerOn && S.mode!=="bank" && S.mode!=="train" && S.mode!=="table" && S.mode!=="taxi" && S.screen!=="attract" && S.screen!=="done";
+  return !S.missionOpen && !S.missionIntroOpen && S.timerOn && S.mode!=="bank" && S.mode!=="train" && S.mode!=="table" && S.mode!=="taxi" && !LIFE_FLOWS[S.mode] && S.screen!=="attract" && S.screen!=="done";
 }
 function resetTimer(){ S.left=60; S.timedout=false; el.tbar.hidden=!timerVisible(); paintTimer(); }
 function paintTimer(){ el.tfill.style.width=(S.left/60*100)+"%"; }
@@ -2487,6 +2617,7 @@ function render(){
   else if(S.mode==="train"){ if(!S.tr) S.tr=freshTrain(S.big); h=vTrain(); }
   else if(S.mode==="bank") h=vBank();
   else if(S.mode==="taxi") h=vTaxi();
+  else if(LIFE_FLOWS[S.mode]) h=vLife();
   else if(S.screen==="attract") h=vAttract();
   else if(S.screen==="serve") h=vServe();
   else if(S.screen==="menu") h=vMenu();
@@ -3319,15 +3450,18 @@ function vbTips(){
 /* ===== 가게 고르기 시트 ===== */
 function storeIcon(m){ return '<span class="dot" style="background:'+(MODE_COLOR[m]||"#444")+'">'+(MODE_SHORT[m]||"")+'</span>'; }
 function vPicker(){
-  var rows=Object.keys(MISSIONS).map(function(m){
+  var rows=PRACTICE_ORDER.map(function(m){
     var total=MISSIONS[m].length, c=clearedCount(m);
-    return '<button class="pkitem" data-p="mode" data-v="'+m+'" aria-current="'+(S.mode===m)+'">'
+    var heading=m==="cafe"?'<h3 class="pkgroup">기존 연습</h3>'
+      :m==="hospital"?'<h3 class="pkgroup">생활 서비스</h3>'
+      :m==="shopfraud"?'<h3 class="pkgroup">사기 예방</h3>':'';
+    return heading+'<button class="pkitem" data-p="mode" data-v="'+m+'" aria-current="'+(S.mode===m)+'">'
       +storeIcon(m)
       +'<span class="tx"><b>'+DATA[m].store+'</b><small>'+MODE_WHAT[m]+'</small></span>'
       +'<span class="ct'+(c>=total?" full":"")+'">'+c+'/'+total+'</span></button>';
   }).join("");
   return '<div class="picker" data-p="close"><div class="sheet">'
-    +'<div class="hd"><b>어디서 연습할까요?</b><button data-p="close">닫기</button></div>'
+    +'<div class="hd"><b>무엇을 연습할까요?</b><button data-p="close">닫기</button></div>'
     +'<div class="pkgrid">'
       +'<button class="pkitem lobbyrow" data-p="mode" data-v="lobby" aria-current="'+(S.mode==="lobby")+'">'
         +'<span class="dot">홈</span><span class="tx"><b>로비</b><small>출석부와 오늘 할 연습</small></span></button>'
@@ -3379,6 +3513,13 @@ var MODE_COLOR={cafe:"#143A2B",burger:"#C62828",snack:"#B8362A",table:"#1F6F4A",
 var MODE_SHORT={cafe:"카페",burger:"버거",snack:"분식",table:"호프",bank:"은행",train:"기차",taxi:"택시"};
 var MODE_WHAT={cafe:"커피 주문하기",burger:"햄버거 주문하기",snack:"분식 주문하기",
   table:"식당에서 시키기",bank:"은행 일 보기",train:"기차표 사기",taxi:"택시 호출 연습"};
+var PRACTICE_ORDER=["cafe","burger","snack","table","bank","train","taxi",
+  "hospital","insurance","shopping","certificate","shopfraud","smishing","familyfraud"];
+Object.keys(LIFE_FLOWS).forEach(function(mode){
+  MODE_COLOR[mode]=LIFE_FLOWS[mode].color;
+  MODE_SHORT[mode]=LIFE_FLOWS[mode].short;
+  MODE_WHAT[mode]=LIFE_FLOWS[mode].what;
+});
 function checkSVG(){
   return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>';
 }
@@ -3720,10 +3861,13 @@ function vLobby(){
   }).join("");
 
   var totalAll=0, doneAll=0;
-  var modes=Object.keys(MISSIONS).map(function(m){
+  var modes=PRACTICE_ORDER.map(function(m){
     var total=MISSIONS[m].length, c=clearedCount(m);
     totalAll+=total; doneAll+=c;
-    return '<button class="lbrow" data-l="mode" data-m="'+m+'">'
+    var heading=m==="cafe"?'<h3 class="lbmodegroup">기존 연습</h3>'
+      :m==="hospital"?'<h3 class="lbmodegroup">생활 서비스</h3>'
+      :m==="shopfraud"?'<h3 class="lbmodegroup">사기 예방</h3>':'';
+    return heading+'<button class="lbrow" data-l="mode" data-m="'+m+'">'
       +'<span class="dot" style="background:'+MODE_COLOR[m]+'">'+MODE_SHORT[m]+'</span>'
       +'<span class="tx"><span class="md">'+MODE_WHAT[m]+'</span><b>'+DATA[m].store+'</b></span>'
       +'<span class="ct'+(c>=total?" full":"")+'">'+c+'/'+total+'</span>'
@@ -3780,7 +3924,7 @@ function vLobby(){
         +'<span class="cv">'+chevSVG()+'</span></button>'
     +'</div>'
     +'<div class="lbsection">'
-      +'<div class="lbsec"><h2>가게 골라서 연습</h2><span>'+doneAll+' / '+totalAll+'</span></div>'
+      +'<div class="lbsec"><h2>연습 주제 고르기</h2><span>'+doneAll+' / '+totalAll+'</span></div>'
       +modes
     +'</div>'
     +'<div class="lbsection install-box"><h2>앱처럼 쓰기</h2>'
@@ -3789,7 +3933,7 @@ function vLobby(){
       +'<p><b>안드로이드 Chrome:</b> 메뉴(⋮) → 앱 설치 또는 홈 화면에 추가</p>'
       +'<button data-l="install" id="installBtn"'+(installPrompt?'':' hidden')+'>이 휴대폰에 추가하기</button>'
     +'</div>'
-    +'<p class="lbnote">여기 나오는 가게·은행·기차·택시는 연습을 위해 지어낸 것입니다. 실제로 주문·결제·송금·택시 호출이 일어나지 않습니다.</p>'
+    +'<p class="lbnote">여기 나오는 장소와 서비스는 연습용입니다. 실제로 주문·결제·예약·청구·송금·택시 호출·민원 발급이 일어나지 않습니다.</p>'
     +'<span class="scrollhint" id="scrollhint">아래에 더 있습니다'+downSVG()+'</span>'
   +'</div>';
 }
@@ -3817,6 +3961,50 @@ function lobbyScrollHint(){
   }
   sc.onscroll=upd;
   setTimeout(upd,30);
+}
+
+/* ===================== 생활 서비스·사기 예방 연습 ===================== */
+function lifeFlow(){ return LIFE_FLOWS[S.mode].missions[S.mission]; }
+function lifeState(){
+  if(S.life.mission!==S.mission){ S.life=freshLife(); S.life.mission=S.mission; }
+  return S.life;
+}
+function vLife(){
+  var config=LIFE_FLOWS[S.mode], flow=lifeFlow(), state=lifeState();
+  var h='<div class="life-app" style="--life-accent:'+config.color+'"><div class="life-head"><small>'+esc(config.store)+' · 연습 화면</small><h1>'+esc(config.what)+'</h1></div>'
+    +'<div class="life-body"><div class="life-scene"><strong>연습 상황</strong><p>'+esc(flow.scene)+'</p></div>';
+  if(state.done){
+    HINT='[data-life="restart"]';
+    h+='<div class="life-panel life-done"><h2>연습을 마쳤습니다</h2><p>'+esc(flow.result)+'</p>'
+      +'<button class="life-again" data-life="restart">다시 연습하기</button></div>';
+  }else{
+    var step=flow.steps[state.step];
+    HINT='[data-life="pick"][data-v="'+step.options.findIndex(function(option){return option[1];})+'"]';
+    h+='<div class="life-progress">'+(state.step+1)+' / '+flow.steps.length+' 단계</div>'
+      +'<div class="life-panel"><h2>'+esc(step.q)+'</h2><p>'+esc(step.body)+'</p>'
+      +(state.feedback?'<div class="life-feedback" role="alert">'+esc(state.feedback)+'</div>':'')
+      +'<div class="life-options">'+step.options.map(function(option,index){
+        return '<button data-life="pick" data-v="'+index+'">'+esc(option[0])+'</button>';
+      }).join('')+'</div></div>';
+  }
+  return h+'<p class="life-note">모든 화면과 자료는 연습용입니다. 실제 예약·보험 청구·주문·민원 발급은 진행되지 않습니다. 개인정보와 결제 정보를 입력하지 마세요.</p></div></div>';
+}
+function lifeAct(btn){
+  var a=btn.getAttribute('data-life');
+  if(a==='restart'){ S.life=freshLife(); render(); return; }
+  if(a!=='pick') return;
+  var state=lifeState(), flow=lifeFlow();
+  if(state.done) return;
+  var step=flow.steps[state.step], option=step.options[+btn.getAttribute('data-v')];
+  if(!option) return;
+  if(!option[1]){
+    state.feedback=option[2]||'다시 확인하고 선택해 주세요.';
+    attStat('w',1);
+  }else{
+    state.feedback=''; state.step++;
+    if(state.step>=flow.steps.length){ state.done=true; finishCheck(); }
+  }
+  render();
 }
 
 /* ===================== 모바일 택시 연습 ===================== */
@@ -5071,6 +5259,8 @@ function addCart(nm,pr,opts,q,base){
 
 /* ========== 키오스크 이벤트 ========== */
 function act(e){
+  var lifeBtn=e.target.closest("[data-life]");
+  if(lifeBtn){ lifeAct(lifeBtn); return; }
   var taxiBtn=e.target.closest("[data-x]");
   if(taxiBtn){ taxiAct(taxiBtn); return; }
   var ob=e.target.closest("[data-o]");
@@ -5313,6 +5503,7 @@ function softReset(){
   S.tr=freshTrain(S.big);
   S.tb=freshTable();
   stopTaxiTimer(); S.tx=freshTaxi();
+  S.life=freshLife();
   UNDO=[]; AUTO=false; NOOP=0; IDLE=0; ATT=null;
   resetTimer();
 }
@@ -5423,6 +5614,7 @@ var LEVEL={
   bank:["기초","기초","심화","심화","심화","기초","기초"],
   taxi:["기초","심화"]
 };
+Object.keys(LIFE_FLOWS).forEach(function(mode){LEVEL[mode]=["기초","심화"];});
 function lvOf(m,i){ return LEVEL[m]&&LEVEL[m][i]==="심화"?"어려움":"초보자용"; }
 /* 키오스크 미션이 찾아야 하는 메뉴 — 힌트가 정확한 메뉴와 탭을 가리키게 합니다 */
 var NEED={
